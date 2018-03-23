@@ -6,6 +6,9 @@ Authors@R: "Pier Federico Gherardini <federico.gherardini@gmail.com> [aut, cre]"
 Depends:
 License: GPL-2
 LinkingTo: Rcpp
+Remotes:
+    bioc::3.6/flowCore
+    git::https://github.com/ParkerICI/scfeatures.git
 Imports:
     Rcpp,
     cluster,
@@ -22,4 +25,4 @@ Imports:
     jsonlite,
     DT
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
