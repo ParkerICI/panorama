@@ -7,7 +7,7 @@ Depends:
 License: GPL-2
 LinkingTo: Rcpp
 Remotes:
-    bioc::3.6/flowCore
+    bioc::release/flowCore
     git::https://github.com/ParkerICI/scfeatures.git
 Imports:
     Rcpp,
