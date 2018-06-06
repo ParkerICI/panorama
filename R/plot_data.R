@@ -1,8 +1,20 @@
 options(stringsAsFactors = F)
 
+#' @export
+plot_communities <- function(G, att.names, ...) {
+    tab <- igraph::get.data.frame(G, what = "vertices")
+    df <- tab[, c(att.names, "community_id")]
+    
+    df <- plyr::ddply(df, ~community_id, plyr::colwise(median))
+    
+    m <- as.matrix(df[, att.names])
+    row.names(m) <- df$community_id
+    gplots::heatmap.2(m, trace = "none", ...)
+}
 
 
-density_scatterplot  <- function(tab, x_name, y_name, grouping)
+
+density_scatterplot <- function(tab, x_name, y_name, grouping)
 {
     m <- ddply(tab, grouping, function(m, x_name, y_name)
     {
