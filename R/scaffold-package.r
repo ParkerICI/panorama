@@ -1,16 +1,7 @@
-#' scaffold
+#' scaffold2
 #'
-#' @name scaffold
-#' @docType package
-#' @import flowCore
-#' @import cluster
-#' @import shiny
-#' @import plyr
-#' @import reshape
-#' @import ggplot2
-#' @import igraph
-#' @import cluster
+#' @name scaffold2
 #' @importFrom Rcpp sourceCpp
-#' @importFrom dplyr %>%
-#' @useDynLib scaffold 
+#' @importFrom igraph V E V<-
+#' 
 NULL
