@@ -123,8 +123,12 @@ get_graph <- function(G, node.size.attr, min.node.size, max.node.size, landmark.
     if("edge_type" %in% igraph::list.edge.attributes(G)) #Old graphs did not have this
         edges[, "edge_type"] <- E(G)$edge_type
     #print(G)
-    ret <- list(names = V(G)$Label, size = vertex.size / trans$scaling, type = V(G)$type, highest_scoring_edge = V(G)$highest_scoring_edge, X = x, Y = y)
-    ret <- c(ret, edges = list(edges))
+    
+    nodes <- igraph::get.data.frame(G, what = c("vertices"))
+    nodes$x <- x
+    nodes$y <- y
+    
+    ret <- c(nodes = jsonlite::toJSON(nodes), edges = jsonlite::toJSON(edges))
     return(ret)
 }
 

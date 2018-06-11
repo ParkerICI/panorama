@@ -132,12 +132,12 @@ class PixiGraph {
         })(this.rootContainer, this.graphContainer, this.edgeContainer, this.renderer);
         
         
-        
+        /*
         addWheelListener(domEl, function (e) {
             e.stopPropagation();
             e.preventDefault();
             zoom(e.clientX, e.clientY, e.deltaY < 0);
-        });
+        });*/
 
         this.addDragNDrop();
     }
@@ -270,6 +270,7 @@ class PixiGraph {
             sprite.interactive = true;
             
             var sizeScale = nodeSizeScale(d[visControl.nodeSizeAttr]);
+            console.log(sizeScale)
             sprite.scale.x = 0.02 * sizeScale;
             sprite.scale.y = 0.02 * sizeScale;
             //Given that the anchor point is in the middle the x and y of the hitArea are 0
@@ -319,28 +320,25 @@ $.extend(networkOutputBinding, {
             return $(scope).find('.shiny-network-output');
          },
 
-         renderValue: function(el, data) {
-            if(data == null) return;
+         renderValue: function(el, Rdata) {
+            if(Rdata == null) return;
             pixiGraph.addToDOM(el, 1200, 800, () => {}, () => {})
 
-            console.log(data)
+            console.log(Rdata)
 
-            var circle = new PIXI.Circle(0, 0, 50);
-            console.log(circle);
-            
-            var nodes = new Array();
-            for (var i = 0; i < data.names.length; i++)
-            {
-                nodes.push({"name": data.names[i], "X": data.X[i], "Y": data.Y[i], "type": data.type[i], "size": data.size[i], "highest_scoring_edge" : data.highest_scoring_edge[i]});
+            var data = {
+                nodes: JSON.parse(Rdata.nodes),
+                edges: JSON.parse(Rdata.edges)
             }
-            
-            var lin = new Array();
-            var edges = data.edges;
-            for(var i = 0; i < edges.id.length; i++)
-            {
-                lin.push({"x1" : edges.x1[i], "x2" : edges.x2[i], "y1" : edges.y1[i], "y2" : edges.y2[i], "source" : edges.source[i], "target" : edges.target[i], "edge_type" : edges.edge_type[i], "id" : edges.id[i], "is_highest_scoring" : edges.is_highest_scoring[i]});
+
+            var visControl = {
+                nodeSizeAttr: "popsize",
+                nodeColorAttr: "CD45",
+                minNodeSize: 8,
+                maxNodeSize: 60
             }
-            
+
+            pixiGraph.draw(data, visControl);
                 
             
             function rescale()
