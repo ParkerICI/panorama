@@ -16,6 +16,7 @@ fluidPage(
     fluidRow(
         column(6,
             tags$head(tags$script(src = "d3.min.js")),
+            tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.7.1/pixi.min.js")),
             tags$head(tags$script(src = "graph.js")),
             tags$head(tags$script(src = "rect_select.js")),
             singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'rect_select.css'))),

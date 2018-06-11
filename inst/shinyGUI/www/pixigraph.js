@@ -1,12 +1,14 @@
-var addWheelListener = require('./addWheelListener');
-var PIXI = require('pixi.js');
-var d3 = require('d3');
+//var addWheelListener = require('./addWheelListener');
+//var PIXI = require('pixi.js');
+//var d3 = require('d3');
 
 
 
-function PixiGraph() {
+class PixiGraph {
     
-    this.getNodeFillScale = function (nodes, visControl) {
+    constructor() {};
+
+    getNodeFillScale(nodes, visControl) {
         var ret = null;
         
         if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
@@ -24,7 +26,7 @@ function PixiGraph() {
     
     
     
-    this.getNodeSizeScale = function (nodes, visControl) {
+    getNodeSizeScale(nodes, visControl) {
         var ret = null;
         
         if (visControl.nodeSizeAttr && visControl.nodeSizeAttr != "") {
@@ -41,7 +43,7 @@ function PixiGraph() {
     
     
     
-    this.getCircleTexture = function () {
+    getCircleTexture() {
         var renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true });
         renderer.backgroundColor = 0xFFFFFF;
         var graphics = new PIXI.Graphics();
@@ -57,7 +59,7 @@ function PixiGraph() {
     
     
     
-    this.addToDOM = function (domEl, width, height, onNodeNewSelection, onNodeAddToSelection) {
+    addToDOM(domEl, width, height, onNodeNewSelection, onNodeAddToSelection) {
         this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true });
         this.renderer.backgroundColor = 0xFFFFFF;
         
@@ -116,7 +118,7 @@ function PixiGraph() {
         this.addDragNDrop();
     }
     
-    this.addDragNDrop = function () {
+    addDragNDrop() {
         var isDragging = false,
             prevX, prevY,
             mouseDownX, mouseDownY;
@@ -208,7 +210,7 @@ function PixiGraph() {
         };
     }
 
-    this.draw = function (data, visControl) {
+    draw(data, visControl) {
         console.log("Drawing");
         var nodes = data.nodes;
         var edges = data.edges;
@@ -280,5 +282,4 @@ function PixiGraph() {
     
 }
 
-module.exports = PixiGraph;
 
