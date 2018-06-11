@@ -8,7 +8,7 @@ scaffold.run <- function(launch.browser = TRUE,
         on.exit(rm(.ScaffoldWorkingDir, envir = .GlobalEnv))
     }
     
-    runApp(appDir = file.path(system.file(package = "scaffold"), "shinyGUI"), launch.browser = launch.browser, ...)
+    shiny::runApp(appDir = file.path(system.file(package = "scaffold2"), "shinyGUI"), launch.browser = launch.browser, ...)
 }
 
 

@@ -71,10 +71,13 @@ $.extend(networkOutputBinding, {
          renderValue: function(el, data)
          {
             if(data == null) return;
+            
+            console.log(data)
+            
             var nodes = new Array();
             for (var i = 0; i < data.names.length; i++)
             {
-                nodes.push({"name": data.names[i], "X": data.X[i], "Y": data.Y[i], "color": data.color[i], "type": data.type[i], "size": data.size[i], "highest_scoring_edge" : data.highest_scoring_edge[i]});
+                nodes.push({"name": data.names[i], "X": data.X[i], "Y": data.Y[i], "type": data.type[i], "size": data.size[i], "highest_scoring_edge" : data.highest_scoring_edge[i]});
             }
             
             var lin = new Array();
@@ -90,12 +93,12 @@ $.extend(networkOutputBinding, {
             {
                 var transString = "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")";
                 vis.attr("transform", transString);
-                Shiny.onInputChange("graphui_cur_transform", transString);
+                //Shiny.onInputChange("graphui_cur_transform", transString);
             }
          
             var width = 1200;
             var height = 800;
-            
+    
             
             var zoom = d3.behavior.zoom()
                 .scaleExtent([0.01, 10])
@@ -104,8 +107,8 @@ $.extend(networkOutputBinding, {
             //remove the old graph
             var svg = d3.select(el).select("svg");
             svg.remove();
-            Shiny.onInputChange("graphui_selected_landmark", "");
-            Shiny.onInputChange("graphui_selected_cluster", "");
+            //Shiny.onInputChange("graphui_selected_landmark", "");
+            //Shiny.onInputChange("graphui_selected_cluster", "");
          
             $(el).html("");
          
@@ -172,7 +175,7 @@ $.extend(networkOutputBinding, {
                           })
                     .attr("cx", function(d) { return d.X; })
                     .attr("cy", function(d) { return d.Y; })
-                    .style("fill", function(d) { return d.color; }) //attr or style??
+                    .style("fill", function(d) { return "rgb(0,0,0)"; }) //attr or style??
                    
                     //.on("click", function(d) {d.type == "1" ? Shiny.onInputChange("graphui_selected_landmark", d.name) : Shiny.onInputChange("graphui_selected_cluster", d.name)})
                     .on("click", function(d)
@@ -183,7 +186,7 @@ $.extend(networkOutputBinding, {
                             }
                             d3.select(this).classed("selected", true);
                             var res = d3.selectAll(".selected").data().map(function(d) {return(d.name)});
-                            Shiny.onInputChange("graphui_selected_nodes", res);
+                            //Shiny.onInputChange("graphui_selected_nodes", res);
                         }
                     )
                     .on("mouseenter", function(d)
@@ -210,7 +213,9 @@ $.extend(networkOutputBinding, {
                     .style("font-size", function(d) {return(d.type == "1" ? "16" : "8");})
                     //.style("font-size", "8")
                     .style("opacity", function(d) {return(d.type == "1" ? "1" : "0.8");})
-                    .style("display", function(d) {return(d.type == "1" ? "" : "none"); });               
+                    .style("display", function(d) {return(d.type == "1" ? "" : "none"); });    
+                    
+                    
          }
     });
 Shiny.outputBindings.register(networkOutputBinding, 'networkbinding');

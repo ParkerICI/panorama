@@ -1,34 +1,23 @@
 
 
-my_load <- function(f_name)
-{
-	con <- file(f_name, "rb")
-	retval <- unserialize(con)
-	close(con)
-	return(retval)
-}
-
 
 rescale_size <- function(max.size, min.size, max.val, x)
 {
     return(((max.size - min.size) * x) / max.val + min.size);
 }
 
-get_vertex_size <- function(sc.data, sel.graph, figure.width, node.size.attr, min.node.size, max.node.size, landmark.node.size)
-{
-    G <- sc.data$graphs[[sel.graph]]
-    size.attr <- get.vertex.attribute(G, node.size.attr)
+get_vertex_size <- function(G, figure.width, node.size.attr, min.node.size, max.node.size, landmark.node.size) {
+    size.attr <- igraph::get.vertex.attribute(G, node.size.attr)
     ret <- size.attr / sum(size.attr, na.rm = T)
-    ret <- rescale_size(max.node.size, min.node.size, sc.data$dataset.statistics$max.marker.vals[["popsize.relative"]], ret)
+    print("FIXMEEEEEEEEEE")
+    ret <- rescale_size(max.node.size, min.node.size, 0.7, ret)
     ret[V(G)$type == 1] <- landmark.node.size
     return(ret)
 }
 
 
-get_sample_names <- function(sc.data, sel.graph) 
-{
-    G <- sc.data$graphs[[sel.graph]]
-    s <- list.vertex.attributes(G)
+get_sample_names <- function(G) {
+    s <- igraph::list.vertex.attributes(G)
     s <- grep("@", s, value = T)
     ret <- sapply(strsplit(s, "@"), function (x) {x[[2]]})
     return(unique(ret))
@@ -66,7 +55,7 @@ get_graph_centering_transform <- function(x, y, svg.width, svg.height)
 get_graph_table <- function(sc.data, sel.graph)
 {
     G <- sc.data$graphs[[sel.graph]]
-    ret <- get.data.frame(G, what = c("vertices"))
+    ret <- igraph::get.data.frame(G, what = c("vertices"))
     return(ret)
 }
 
@@ -75,7 +64,7 @@ get_summary_table <- function(sc.data, sel.graph, sel.nodes)
 {
     G <- sc.data$graphs[[sel.graph]]
     col.names <- get_numeric_vertex_attributes(sc.data, sel.graph)
-    tab <- get.data.frame(G, what = "vertices")
+    tab <- igraph::get.data.frame(G, what = "vertices")
     temp <-tab[tab$Label %in% sel.nodes,]
     ret <- temp[, col.names]    
     ret <- rbind(ret, apply(ret, 2, median, na.rm = T))
@@ -103,42 +92,9 @@ export_clusters <- function(working.dir, sel.graph, sel.nodes)
 }
 
 
-graph_to_json <- function(G) {
-    edges <- data.frame(get.edgelist(G, names = F) - 1)
-    colnames(edges) <- c("source", "target")
-    svg.width <- 1200
-    svg.height <- 800
-    
-    x <- V(G)$x
-    y <- V(G)$y
-    
-    y <- -1 * y
-    x <- x + abs(min(x))
-    y <- y + abs(min(y))
-    num.landmarks <- sum(V(G)$type == 1)
-    trans <- get_graph_centering_transform(x, y, svg.width, svg.height)
-    
-    x <- (x / trans$scaling) - trans$offset.x
-    y <- (y / trans$scaling) - trans$offset.y
-    
-    vertex.size <- 10
-    edges <- cbind(edges, x1 = x[edges[, "source"] + 1], x2 = x[edges[, "target"] + 1])
-    edges <- cbind(edges, y1 = y[edges[, "source"] + 1], y2 = y[edges[, "target"] + 1])
-    edges <- cbind(edges, id = 1:nrow(edges))
 
-    nodes <- igraph::get.data.frame(G, what = "vertices")
-    nodes$x <- x
-    nodes$y <- y
-    nodes$size <- vertex.size / trans$scaling
-
-    ret <- list(nodes = nodes, edges = edges)
-    return(as.character(jsonlite::toJSON(ret)))
-}
-
-get_graph <- function(sc.data, sel.graph, node.size.attr, min.node.size, max.node.size, landmark.node.size)
-{
-    G <- sc.data$graphs[[sel.graph]]
-    edges <- data.frame(get.edgelist(G, names = F) - 1)
+get_graph <- function(G, node.size.attr, min.node.size, max.node.size, landmark.node.size) {
+    edges <- data.frame(igraph::get.edgelist(G, names = F) - 1)
     colnames(edges) <- c("source", "target")
     svg.width <- 1200
     svg.height <- 800
@@ -156,7 +112,7 @@ get_graph <- function(sc.data, sel.graph, node.size.attr, min.node.size, max.nod
     x <- (x / trans$scaling) - trans$offset.x
     y <- (y / trans$scaling) - trans$offset.y
     
-    vertex.size <- get_vertex_size(sc.data, sel.graph, svg.width, node.size.attr, min.node.size, max.node.size, landmark.node.size)
+    vertex.size <- get_vertex_size(G, svg.width, node.size.attr, min.node.size, max.node.size, landmark.node.size)
     edges <- cbind(edges, x1 = x[edges[, "source"] + 1], x2 = x[edges[, "target"] + 1])
     edges <- cbind(edges, y1 = y[edges[, "source"] + 1], y2 = y[edges[, "target"] + 1])
     edges <- cbind(edges, id = 1:nrow(edges))
@@ -164,7 +120,7 @@ get_graph <- function(sc.data, sel.graph, node.size.attr, min.node.size, max.nod
     edges <- cbind(edges, edge_type = "")
     #Set as true for the highest scoring edges of type 2 vertices
     edges[, "is_highest_scoring"][V(G)$highest_scoring_edge[V(G)$type == 2]] <- 1
-    if("edge_type" %in% list.edge.attributes(G)) #Old graphs did not have this
+    if("edge_type" %in% igraph::list.edge.attributes(G)) #Old graphs did not have this
         edges[, "edge_type"] <- E(G)$edge_type
     #print(G)
     ret <- list(names = V(G)$Label, size = vertex.size / trans$scaling, type = V(G)$type, highest_scoring_edge = V(G)$highest_scoring_edge, X = x, Y = y)
@@ -195,7 +151,7 @@ get_color_for_marker <- function(sc.data, sel.marker, rel.to.sample, sel.graph, 
     }
     else
     {
-        v <- get.vertex.attribute(G, combine_marker_sample_name(sel.marker, active.sample))
+        v <- igraph::get.vertex.attribute(G, combine_marker_sample_name(sel.marker, active.sample))
         
         f <- colorRamp(colors.to.interpolate, interpolate = "linear")
         
@@ -236,14 +192,13 @@ get_color_for_marker <- function(sc.data, sel.marker, rel.to.sample, sel.graph, 
     }
 }
 
-get_numeric_vertex_attributes <- function(sc.data, sel.graph)
+get_numeric_vertex_attributes <- function(G)
 {
-    G <- sc.data$graphs[[sel.graph]]
-    d <- get.data.frame(G, what = "vertices")
+    d <- igraph::get.data.frame(G, what = "vertices")
     #Don't consider attributes which are only present in the landmarks
     d <- d[d$type == 2,]
     num <- sapply(d, function(x) {is.numeric(x) && !any(is.na(x))})
-    v <- list.vertex.attributes(G)[num]
+    v <- igraph::list.vertex.attributes(G)[num]
     v <- v[grep("@", v, invert = T)]
     exclude <- c("x", "y", "cellType", "type", "groups", "r", "g", "b", "size", "DNA1", "DNA2", "BC1", "BC2", "BC3", "BC4", "BC5", "BC6", "Time", "Cell_length", "Cisplatin", "beadDist", "highest_scoring_edge")
     return(v[!(v %in% exclude)])
@@ -253,7 +208,7 @@ get_number_of_cells_per_landmark <- function(sc.data, sel.graph)
 {
     G <- sc.data$graphs[[sel.graph]]
     land <- V(G)[V(G)$type == 1]$Label
-    ee <- get.edgelist(G)
+    ee <- igraph::get.edgelist(G)
     ee <- ee[V(G)[V(G)$type == 2]$highest_scoring_edge,]
     vv <- V(G)[as.numeric(ee[,2])]
     popsize <- V(G)[vv]$popsize
@@ -267,36 +222,18 @@ get_number_of_cells_per_landmark <- function(sc.data, sel.graph)
 
 get_fcs_col_names <- function(f.path)
 {
-    fcs.file <- read.FCS(f.path)
-    ret <- as.vector(pData(parameters(fcs.file))$desc)
+    fcs.file <- flowCore::read.FCS(f.path)
+    params <- flowCore::pData(flowCore::parameters(fcs.file))
+    ret <- as.vector(params$desc)
     
     if(any(is.na(ret)))
     {
         w <- is.na(ret)
-        ret[w] <- as.vector(pData(parameters(fcs.file))$name[w])
+        ret[w] <- as.vector(params$name[w])
     }
     
     return(ret)
 }
-
-
-
-
-
-#get_pubmed_references <- function(sc.data, sel.graph, node.label)
-#{
-#    G <- sc.data$graphs[[sel.graph]]
-#    ret <- ""
-#    if("desc" %in% list.vertex.attributes(G))
-#    {
-#        ret <- sprintf("List of references for landmark %s:<br>", gsub(".fcs", "", node.label))
-#        v <- strsplit(V(G)[V(G)$Label == node.label]$desc, ",")[[1]]
-#        v <- paste(sapply(v, function(x) {sprintf("PMID: <a href='http://www.ncbi.nlm.nih.gov/pubmed/%s' target='_blank'>%s</a><br>", x, x) }), collapse = "")
-#        ret <- paste(ret, v, sep = "")
-#    }
-#    return(HTML(ret))
-#}
-
 
 
 
