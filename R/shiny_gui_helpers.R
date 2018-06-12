@@ -107,7 +107,12 @@ get_graph <- function(G, node.size.attr, min.node.size, max.node.size, landmark.
     x <- x + abs(min(x))
     y <- y + abs(min(y))
     num.landmarks <- sum(V(G)$type == 1)
-    trans <- get_graph_centering_transform(x[V(G)$type == 1], y[V(G)$type == 1], svg.width, svg.height)
+    
+    trans <- NULL
+    if("type" %in% igraph::list.vertex.attributes(G))
+        trans <- get_graph_centering_transform(x[V(G)$type == 1], y[V(G)$type == 1], svg.width, svg.height)
+    else
+        trans <- get_graph_centering_transform(x, y, svg.width, svg.height)
     
     x <- (x / trans$scaling) - trans$offset.x
     y <- (y / trans$scaling) - trans$offset.y

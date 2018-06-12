@@ -226,7 +226,7 @@ class PixiGraph {
         
         nodeContainer.removeChildren();
         edgeContainer.removeChildren();
-        
+        /*
         edges.map(function (d) {
             var graphics = new PIXI.Graphics();
             var color = d.hasOwnProperty("stroke") ? d.stroke : 0xE6E6E6;
@@ -237,7 +237,7 @@ class PixiGraph {
             graphics.endFill();
             edgeContainer.addChild(graphics);
         });
-        
+        */
         
         nodes.map(function (d, i) {
             var sprite = new PIXI.Sprite(circleSprite);

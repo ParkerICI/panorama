@@ -132,12 +132,12 @@ class PixiGraph {
         })(this.rootContainer, this.graphContainer, this.edgeContainer, this.renderer);
         
         
-        /*
-        addWheelListener(domEl, function (e) {
+        
+        domEl.addEventListener("wheel", function (e) {
             e.stopPropagation();
             e.preventDefault();
             zoom(e.clientX, e.clientY, e.deltaY < 0);
-        });*/
+        });
 
         this.addDragNDrop();
     }
@@ -250,18 +250,22 @@ class PixiGraph {
         
         nodeContainer.removeChildren();
         edgeContainer.removeChildren();
-        
+ 
+        var graphics = new PIXI.Graphics();
+        //var color = d.hasOwnProperty("stroke") ? d.stroke : 0xE6E6E6;
+        //var size = d.hasOwnProperty("stroke_width") ? d.stroke_width : 1;
+        //graphics.lineStyle(size , color, 1);
+       
+        graphics.lineStyle(1, 0xE6E6E6, 1);
+
         edges.map(function (d) {
-            var graphics = new PIXI.Graphics();
-            var color = d.hasOwnProperty("stroke") ? d.stroke : 0xE6E6E6;
-            var size = d.hasOwnProperty("stroke_width") ? d.stroke_width : 1;
-            graphics.lineStyle(size , color, 1);
-            graphics.moveTo(d.x1, d.y1);
-            graphics.lineTo(d.x2, d.y2);
+            graphics.moveTo(d.x1, d.y1)
+            graphics.lineTo(d.x2, d.y2)
             graphics.endFill();
-            edgeContainer.addChild(graphics);
-        });
         
+        })
+
+        edgeContainer.addChild(graphics);
         
         nodes.map(function (d, i) {
             var sprite = new PIXI.Sprite(circleSprite);
@@ -270,9 +274,9 @@ class PixiGraph {
             sprite.interactive = true;
             
             var sizeScale = nodeSizeScale(d[visControl.nodeSizeAttr]);
-            console.log(sizeScale)
-            sprite.scale.x = 0.02 * sizeScale;
-            sprite.scale.y = 0.02 * sizeScale;
+            
+            sprite.scale.x = 0.005 * sizeScale;
+            sprite.scale.y = 0.005 * sizeScale;
             //Given that the anchor point is in the middle the x and y of the hitArea are 0
             //Also 50 is the radius of the original sprite that then gets scaled down
             sprite.hitArea = new PIXI.Circle(0, 0, 50);
@@ -324,7 +328,7 @@ $.extend(networkOutputBinding, {
             if(Rdata == null) return;
             pixiGraph.addToDOM(el, 1200, 800, () => {}, () => {})
 
-            console.log(Rdata)
+
 
             var data = {
                 nodes: JSON.parse(Rdata.nodes),
@@ -332,14 +336,14 @@ $.extend(networkOutputBinding, {
             }
 
             var visControl = {
-                nodeSizeAttr: "popsize",
-                nodeColorAttr: "CD45",
+                nodeSizeAttr: "CD3",
+                nodeColorAttr: "CD3",
                 minNodeSize: 8,
                 maxNodeSize: 60
             }
-
+            console.log(data)
             pixiGraph.draw(data, visControl);
-                
+            console.log("drawing complete")    
             
             function rescale()
             {
