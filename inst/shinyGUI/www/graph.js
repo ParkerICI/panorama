@@ -41,9 +41,9 @@ class PixiGraph {
         if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
             var attr = visControl.nodeColorAttr;
             ret = d3.scale.linear()
-               .domain(d3.extent(nodes, function (d) { return d[attr]; }))
-               .range([visControl.colorMin, visControl.colorMax])
-			   .interpolate(d3.interpolateLab);
+                    .domain(d3.extent(nodes, function (d) { return d[attr]; }))
+                    .range([visControl.colorMin, visControl.colorMax])
+			        .interpolate(d3.interpolateLab);
         }
         else
             ret = function (val) { return ""; };
@@ -55,14 +55,16 @@ class PixiGraph {
     
     getNodeSizeScale(nodes, visControl) {
         var ret = null;
+
+        var v = nodes.filter(d => !d.type || d.type != "landmark")
         
-        if (visControl.nodeSizeAttr && visControl.nodeSizeAttr != "") {
+        if (visControl.nodeSize == "Proportional") {
             ret = d3.scale.linear()
-            .range([visControl.minNodeSize, visControl.maxNodeSize])
-            .domain(d3.extent(nodes, function (d) { return d[visControl.nodeSizeAttr]; }));
+                    .range([visControl.minNodeSize, visControl.maxNodeSize])
+                    .domain(d3.extent(v, d => d.popsize));
         }
         else //Return a constant number
-            ret = function (val) { return visControl.minNodeSize; };
+            ret = val => 0.8 * visControl.landmarkNodeSize
         return ret;
     };
     
@@ -281,7 +283,7 @@ class PixiGraph {
             if(d.type && d.type == "landmark")
                 size = visControl.landmarkNodeSize
             else
-                size = nodeSizeScale(d[visControl.nodeSizeAttr]);
+                size = nodeSizeScale(d.popsize);
             
             sprite.scale.x = 0.005 * size;
             sprite.scale.y = 0.005 * size;
@@ -341,7 +343,6 @@ $.extend(visControlOutputBinding, {
         if(!visControl)
             return
         
-        console.log(visControl)
         pixiGraph.draw(visControl)
     }
 })
@@ -363,8 +364,6 @@ $.extend(networkOutputBinding, {
             if(!el.hasChildNodes())
                 pixiGraph.addToDOM(el, 1200, 800, () => {}, () => {})
             
-            console.log(el)
-
             var data = {
                 nodes: JSON.parse(Rdata.nodes),
                 edges: JSON.parse(Rdata.edges)

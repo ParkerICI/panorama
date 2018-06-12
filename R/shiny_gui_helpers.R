@@ -131,6 +131,8 @@ get_graph <- function(G) {
     nodes <- igraph::get.data.frame(G, what = c("vertices"))
     nodes$x <- x
     nodes$y <- y
+    nodes$popsize[nodes$type == "landmark"] <- 0
+    nodes$popsize <- nodes$popsize / sum(nodes$popsize)
     
     ret <- c(nodes = jsonlite::toJSON(nodes), edges = jsonlite::toJSON(edges))
     return(ret)

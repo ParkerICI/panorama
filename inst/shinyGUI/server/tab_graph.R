@@ -91,7 +91,7 @@ fluidPage(
             ),
             fluidRow(
                 column(6,
-                    numericInput("graphui_max_node_size", "Maximum node size", 60, min = 0, max = 1000)
+                    numericInput("graphui_max_node_size", "Maximum node size", 80, min = 0, max = 1000)
                 ),
                 column(6,
                     numericInput("graphui_landmark_node_size", "Landmark node size", 40, min = 0, max = 1000)
@@ -171,6 +171,7 @@ output$graphui_viscontrol <- reactive({
     return(list(
         minNodeSize = input$graphui_min_node_size,
         maxNodeSize = input$graphui_max_node_size,
+        nodeSize = input$graphui_node_size,
         nodeColorAttr = input$graphui_node_color_attr,
         colorMin = input$graphui_color_min,
         colorMax = input$graphui_color_max,
