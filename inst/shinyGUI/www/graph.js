@@ -30,7 +30,10 @@ function parse_trans_string (a)
 
 class PixiGraph {
     
-    constructor() {};
+    constructor(data) {
+        this.data = data
+    }
+
 
     getNodeFillScale(nodes, visControl) {
         var ret = null;
@@ -39,7 +42,7 @@ class PixiGraph {
             var attr = visControl.nodeColorAttr;
             ret = d3.scale.linear()
                .domain(d3.extent(nodes, function (d) { return d[attr]; }))
-               .range(["#132B43", "#56B1F7"])
+               .range([visControl.colorMin, visControl.colorMax])
 			   .interpolate(d3.interpolateLab);
         }
         else
@@ -234,10 +237,13 @@ class PixiGraph {
         };
     }
 
-    draw(data, visControl) {
-        console.log("Drawing");
-        var nodes = data.nodes;
-        var edges = data.edges;
+    draw(visControl) {
+
+        if(!this.data)
+            return;
+
+        var nodes = this.data.nodes;
+        var edges = this.data.edges;
         var nodeContainer = this.nodeContainer;
         var edgeContainer = this.edgeContainer;
         var graphContainer = this.graphContainer;
@@ -312,11 +318,29 @@ class PixiGraph {
 }
 
 
+var pixiGraph = new PixiGraph(null);
+
+var visControlOutputBinding = new Shiny.OutputBinding();
+
+
+$.extend(visControlOutputBinding, {
+    find: function(scope) {
+        return $(scope).find('.shiny-vis-control');
+    },
+    
+    renderValue: function(el, visControl) {
+        if(!visControl)
+            return
+        
+        console.log(visControl)
+        pixiGraph.draw(visControl)
+    }
+})
+
+Shiny.outputBindings.register(visControlOutputBinding, 'viscontrolbinding');
 
 
 var networkOutputBinding = new Shiny.OutputBinding();
-var pixiGraph = new PixiGraph();
-
 
 $.extend(networkOutputBinding, {
 
@@ -326,24 +350,18 @@ $.extend(networkOutputBinding, {
 
          renderValue: function(el, Rdata) {
             if(Rdata == null) return;
-            pixiGraph.addToDOM(el, 1200, 800, () => {}, () => {})
 
-
+            if(!el.hasChildNodes())
+                pixiGraph.addToDOM(el, 1200, 800, () => {}, () => {})
+            
+            console.log(el)
 
             var data = {
                 nodes: JSON.parse(Rdata.nodes),
                 edges: JSON.parse(Rdata.edges)
             }
 
-            var visControl = {
-                nodeSizeAttr: "CD3",
-                nodeColorAttr: "CD3",
-                minNodeSize: 8,
-                maxNodeSize: 60
-            }
-            console.log(data)
-            pixiGraph.draw(data, visControl);
-            console.log("drawing complete")    
+            pixiGraph.data = data
             
             function rescale()
             {
@@ -351,11 +369,7 @@ $.extend(networkOutputBinding, {
                 vis.attr("transform", transString);
                 //Shiny.onInputChange("graphui_cur_transform", transString);
             }
-         
-            var width = 1200;
-            var height = 800;
-    
-            
+
                     
          }
     });

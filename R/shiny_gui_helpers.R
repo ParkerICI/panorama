@@ -93,7 +93,7 @@ export_clusters <- function(working.dir, sel.graph, sel.nodes)
 
 
 
-get_graph <- function(G, node.size.attr, min.node.size, max.node.size, landmark.node.size) {
+get_graph <- function(G) {
     edges <- data.frame(igraph::get.edgelist(G, names = F) - 1)
     colnames(edges) <- c("source", "target")
     svg.width <- 1200
@@ -117,7 +117,6 @@ get_graph <- function(G, node.size.attr, min.node.size, max.node.size, landmark.
     x <- (x / trans$scaling) - trans$offset.x
     y <- (y / trans$scaling) - trans$offset.y
     
-    vertex.size <- get_vertex_size(G, svg.width, node.size.attr, min.node.size, max.node.size, landmark.node.size)
     edges <- cbind(edges, x1 = x[edges[, "source"] + 1], x2 = x[edges[, "target"] + 1])
     edges <- cbind(edges, y1 = y[edges[, "source"] + 1], y2 = y[edges[, "target"] + 1])
     edges <- cbind(edges, id = 1:nrow(edges))

@@ -1,5 +1,9 @@
 reactiveNetwork <- function (outputId) {
-    HTML(paste("<div id=\"", outputId, "\" class=\"shiny-network-output\"><svg /></div>", sep=""))
+    HTML(paste("<div id=\"", outputId, "\" class=\"shiny-network-output\"></div>", sep=""))
+}
+
+visControl <- function(outputId) {
+    HTML(paste("<div id=\"", outputId, "\" class=\"shiny-vis-control\"></div>", sep=""))
 }
 
 row <- function(...) {
@@ -21,6 +25,7 @@ fluidPage(
             tags$head(tags$script(src = "rect_select.js")),
             singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'rect_select.css'))),
             singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'graph.css'))),
+            visControl("graphui_viscontrol"),
             reactiveNetwork(outputId = "graphui_mainnet")
         ),
         column(3,
@@ -29,7 +34,7 @@ fluidPage(
         column(3,
             selectizeInput("graphui_selected_graph", "Choose a graph:", choices = c("", list.files(path = working.directory, pattern = "*.graphml$")), width = "100%"),
             selectizeInput("graphui_active_sample", "Active sample", choices = c("All"), width = "100%"),
-            selectInput("graphui_marker", "Nodes color:", choices = c("Default"), width = "100%"),
+            selectInput("graphui_node_color_attr", "Nodes color:", choices = c("Default"), width = "100%"),
             fluidRow(
                 column(6,
                     selectInput("graphui_stats_type", "Stats type", choices = c("Ratio", "Difference"))
@@ -124,11 +129,11 @@ get_main_graph <- reactive({
         
         isolate({
             sel.marker <- NULL
-            if(input$graphui_marker %in% attrs)
-                sel.marker <- input$graphui_marker
+            if(input$graphui_node_color_attr %in% attrs)
+                sel.marker <- input$graphui_node_color_attr
             else
                 sel.marker <- "Default"
-            updateSelectInput(session, "graphui_marker", choices = c("Default", attrs), selected = sel.marker)
+            updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs), selected = sel.marker)
             updateSelectInput(session, "graphui_markers_to_plot", choices = attrs, selected = attrs)
             sample.names <- scaffold2:::get_sample_names(G)
             updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
@@ -136,8 +141,7 @@ get_main_graph <- reactive({
             updateSelectInput(session, "graphui_stats_relative_to", choices = c("Absolute", sample.names),
                                 selected = input$graphui_stats_relative_to)
         })
-        return(scaffold2:::get_graph(G, node.size.attr, input$graphui_min_node_size,
-                                    input$graphui_max_node_size, input$graphui_landmark_node_size))
+        return(scaffold2:::get_graph(G))
     }
     else
         return(NULL)
@@ -155,6 +159,23 @@ output$graphui_mainnet <- reactive({
         ret$trans_to_apply <- isolate({input$graphui_cur_transform})
     }
     return(ret)
+})
+
+
+output$graphui_viscontrol <- reactive({
+    # Taking this dependency here is necessary because 
+    # chaging the viscontrol object is what triggers the re-rendering. Without this
+    # the scene would not rendered when a different graph is selected
+    
+    input$graphui_selected_graph
+    return(list(
+        minNodeSize = input$graphui_min_node_size,
+        maxNodeSize = input$graphui_max_node_size,
+        nodeColorAttr = input$graphui_node_color_attr,
+        colorMin = input$graphui_color_min,
+        colorMax = input$graphui_color_max,
+        nodeSizeAttr = "CD3"
+    ))
 })
 
 #output$graphui_table <- renderDataTable({
