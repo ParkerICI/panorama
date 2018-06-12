@@ -94,7 +94,7 @@ fluidPage(
                     numericInput("graphui_max_node_size", "Maximum node size", 60, min = 0, max = 1000)
                 ),
                 column(6,
-                    numericInput("graphui_landmark_node_size", "Landmark node size", 8, min = 0, max = 1000)
+                    numericInput("graphui_landmark_node_size", "Landmark node size", 40, min = 0, max = 1000)
                 )
             ),
             selectInput("graphui_display_edges", "Display edges:", choices = c("All", "Highest scoring", "Inter cluster", "To landmark"), width = "100%"), br(),
@@ -174,6 +174,7 @@ output$graphui_viscontrol <- reactive({
         nodeColorAttr = input$graphui_node_color_attr,
         colorMin = input$graphui_color_min,
         colorMax = input$graphui_color_max,
+        landmarkNodeSize = input$graphui_landmark_node_size,
         nodeSizeAttr = "CD3"
     ))
 })

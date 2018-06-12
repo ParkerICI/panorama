@@ -11,7 +11,7 @@ get_vertex_size <- function(G, figure.width, node.size.attr, min.node.size, max.
     ret <- size.attr / sum(size.attr, na.rm = T)
     print("FIXMEEEEEEEEEE")
     ret <- rescale_size(max.node.size, min.node.size, 0.7, ret)
-    ret[V(G)$type == 1] <- landmark.node.size
+    ret[V(G)$type == "landmark"] <- landmark.node.size
     return(ret)
 }
 
@@ -68,7 +68,7 @@ get_summary_table <- function(sc.data, sel.graph, sel.nodes)
     temp <-tab[tab$Label %in% sel.nodes,]
     ret <- temp[, col.names]    
     ret <- rbind(ret, apply(ret, 2, median, na.rm = T))
-    popsize <- data.frame(Cells = temp$popsize, Percentage = temp$popsize / sum(tab$popsize[tab$type == 2]))
+    popsize <- data.frame(Cells = temp$popsize, Percentage = temp$popsize / sum(tab$popsize[tab$type == "cluster"]))
     popsize <- rbind(popsize, colSums(popsize))
     ret <- cbind(popsize, ret)
     ret <- data.frame(Label = c(temp$Label, "Summary"), ret)
@@ -106,11 +106,11 @@ get_graph <- function(G) {
     y <- -1 * y
     x <- x + abs(min(x))
     y <- y + abs(min(y))
-    num.landmarks <- sum(V(G)$type == 1)
+    num.landmarks <- sum(V(G)$type == "landmark")
     
     trans <- NULL
     if("type" %in% igraph::list.vertex.attributes(G))
-        trans <- get_graph_centering_transform(x[V(G)$type == 1], y[V(G)$type == 1], svg.width, svg.height)
+        trans <- get_graph_centering_transform(x[V(G)$type == "landmark"], y[V(G)$type == "landmark"], svg.width, svg.height)
     else
         trans <- get_graph_centering_transform(x, y, svg.width, svg.height)
     
@@ -122,11 +122,11 @@ get_graph <- function(G) {
     edges <- cbind(edges, id = 1:nrow(edges))
     edges <- cbind(edges, is_highest_scoring = 0)
     edges <- cbind(edges, edge_type = "")
-    #Set as true for the highest scoring edges of type 2 vertices
-    edges[, "is_highest_scoring"][V(G)$highest_scoring_edge[V(G)$type == 2]] <- 1
+    
+    #Set as true for the highest scoring edges of cluster vertices
+    edges[, "is_highest_scoring"][V(G)$highest_scoring_edge[V(G)$type == "cluster"]] <- 1
     if("edge_type" %in% igraph::list.edge.attributes(G)) #Old graphs did not have this
         edges[, "edge_type"] <- E(G)$edge_type
-    #print(G)
     
     nodes <- igraph::get.data.frame(G, what = c("vertices"))
     nodes$x <- x
@@ -154,7 +154,7 @@ get_color_for_marker <- function(sc.data, sel.marker, rel.to.sample, sel.graph, 
     if(sel.marker == "Default")
     {
         ret <- rep("#4F93DE", vcount(G))
-        ret[V(G)$type == 1] <- "#FF7580"
+        ret[V(G)$type == "cluster"] <- "#FF7580"
         return(list(color.vector = ret, color.scale.lim = NULL))
     }
     else
@@ -204,7 +204,7 @@ get_numeric_vertex_attributes <- function(G)
 {
     d <- igraph::get.data.frame(G, what = "vertices")
     #Don't consider attributes which are only present in the landmarks
-    d <- d[d$type == 2,]
+    d <- d[d$type == "cluster",]
     num <- sapply(d, function(x) {is.numeric(x) && !any(is.na(x))})
     v <- igraph::list.vertex.attributes(G)[num]
     v <- v[grep("@", v, invert = T)]
@@ -215,9 +215,9 @@ get_numeric_vertex_attributes <- function(G)
 get_number_of_cells_per_landmark <- function(sc.data, sel.graph)
 {
     G <- sc.data$graphs[[sel.graph]]
-    land <- V(G)[V(G)$type == 1]$Label
+    land <- V(G)[V(G)$type == "landmark"]$Label
     ee <- igraph::get.edgelist(G)
-    ee <- ee[V(G)[V(G)$type == 2]$highest_scoring_edge,]
+    ee <- ee[V(G)[V(G)$type == "cluster"]$highest_scoring_edge,]
     vv <- V(G)[as.numeric(ee[,2])]
     popsize <- V(G)[vv]$popsize
     dd <- data.frame(Landmark = ee[,1], popsize)

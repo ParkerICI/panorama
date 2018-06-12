@@ -258,10 +258,7 @@ class PixiGraph {
         edgeContainer.removeChildren();
  
         var graphics = new PIXI.Graphics();
-        //var color = d.hasOwnProperty("stroke") ? d.stroke : 0xE6E6E6;
-        //var size = d.hasOwnProperty("stroke_width") ? d.stroke_width : 1;
-        //graphics.lineStyle(size , color, 1);
-       
+
         graphics.lineStyle(1, 0xE6E6E6, 1);
 
         edges.map(function (d) {
@@ -279,29 +276,41 @@ class PixiGraph {
             sprite.y = d.y;
             sprite.interactive = true;
             
-            var sizeScale = nodeSizeScale(d[visControl.nodeSizeAttr]);
+            var size = 0
             
-            sprite.scale.x = 0.005 * sizeScale;
-            sprite.scale.y = 0.005 * sizeScale;
+            if(d.type && d.type == "landmark")
+                size = visControl.landmarkNodeSize
+            else
+                size = nodeSizeScale(d[visControl.nodeSizeAttr]);
+            
+            sprite.scale.x = 0.005 * size;
+            sprite.scale.y = 0.005 * size;
             //Given that the anchor point is in the middle the x and y of the hitArea are 0
             //Also 50 is the radius of the original sprite that then gets scaled down
             sprite.hitArea = new PIXI.Circle(0, 0, 50);
-            
-            
-            
+
             sprite.mousedown = function (e) {
                 if (e.data.originalEvent.shiftKey) {
                     onNodeAddToSelection([i]);
                 }
-
             }
             /*
             sprite.mouseover = function (e) {
                 console.log("Hovering");
             }*/
+            var col = null
+
+            if(visControl.nodeColorAttr == "Default") {
+                if(d.type && d.type == "landmark")
+                    col = 0xFF7580
+                else
+                    col = 0x4F93DE
+
+            }
+            else
+                col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16);
             
-            var col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16);
-            sprite.tint = col;
+                sprite.tint = col;
             sprite.cachedTint = col;
             sprite.anchor = new PIXI.Point(0.5, 0.5);
             nodeContainer.addChild(sprite);
