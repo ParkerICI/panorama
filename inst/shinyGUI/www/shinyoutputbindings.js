@@ -1,3 +1,77 @@
+class NetworkOutputBinding extends Shiny.OutputBinding {
+
+    constructor(width, height) {
+        super()
+        this.selectedNodes = new Set()
+        this.pixiGraph = new PixiGraph(width, height, null) 
+    }
+
+    find(scope) {
+        return $(scope).find('.shiny-network-output');
+    }
+
+    onNodeNewSelection(sel) {
+        this.selectedNodes.clear()
+        this.onNodeAddToSelection(sel)
+    }
+
+    onNodeAddToSelection(sel) {
+        this.selectedNodes.add(sel)
+        console.log(Array.from(this.selectedNodes))
+        Shiny.onInputChange("graphui_selected_nodes", Array.from(this.selectedNodes))
+    }
+
+    renderValue(el, Rdata) {
+        if(Rdata == null) return
+
+        if(!el.hasChildNodes())
+            this.pixiGraph.addToDOM(el, 
+                (sel) => this.onNodeNewSelection(sel),
+                (sel) => this.onNodeAddToSelection(sel)
+            )
+        
+        let data = {
+            nodes: JSON.parse(Rdata.nodes),
+            edges: JSON.parse(Rdata.edges)
+        }
+
+        this.pixiGraph.data = data
+        
+    }
+}
+
+class VisControlOutputBinding extends Shiny.OutputBinding {
+
+    constructor(networkOutputBinding) {
+        super()
+        this.pixiGraph = networkOutputBinding.pixiGraph
+
+    }
+
+    find(scope) {
+        return $(scope).find('.shiny-vis-control')
+    }
+
+    renderValue(el, visControl) {
+        if(!visControl)
+            return
+        
+        this.pixiGraph.draw(visControl)
+    }
+}
+
+
+
+
+
+let networkOutputBinding = new NetworkOutputBinding(1200, 800)
+let visControlOutputBinding = new VisControlOutputBinding(networkOutputBinding)
+
+Shiny.outputBindings.register(networkOutputBinding, 'networkbinding');
+Shiny.outputBindings.register(visControlOutputBinding, 'viscontrolbinding');
+
+
+
 function display_edge(option_val, edge_type)
 {
     if(option_val == "All")
@@ -24,86 +98,6 @@ function parse_trans_string (a)
     }
     return b;
 }
-
-
-
-class NetworkOutputBinding extends Shiny.OutputBinding {
-
-    constructor(width, height) {
-        super()
-        this.selectedNodes = new Set()
-        this.pixiGraph = new PixiGraph(width, height, null) 
-    }
-
-    find(scope) {
-        return $(scope).find('.shiny-network-output');
-    }
-
-    onNodeNewSelection(sel) {
-        this.selectedNodes.clear()
-        this.onNodeAddToSelection(sel)
-    }
-
-    onNodeAddToSelection(sel) {
-        this.selectedNodes.add(sel)
-        Shiny.onInputChange("graphui_selected_nodes", Array.from(this.selectedNodes))
-    }
-
-
-    renderValue(el, Rdata) {
-        if(Rdata == null) return;
-
-        if(!el.hasChildNodes())
-            this.pixiGraph.addToDOM(el, (sel) => this.onNodeNewSelection(sel), () => {})
-        
-        let data = {
-            nodes: JSON.parse(Rdata.nodes),
-            edges: JSON.parse(Rdata.edges)
-        }
-
-        this.pixiGraph.data = data
-        
-    }
-
-}
-
-
-
-
-
-class VisControlOutputBinding extends Shiny.OutputBinding {
-
-    constructor(networkOutputBinding) {
-        super()
-        this.pixiGraph = networkOutputBinding.pixiGraph
-
-    }
-
-    find(scope) {
-        return $(scope).find('.shiny-vis-control')
-    }
-
-    renderValue(el, visControl) {
-        if(!visControl)
-            return
-        
-        this.pixiGraph.draw(visControl)
-    }
-    
-
-}
-
-
-
-
-
-let networkOutputBinding = new NetworkOutputBinding(1200, 800)
-
-let visControlOutputBinding = new VisControlOutputBinding(networkOutputBinding)
-
-Shiny.outputBindings.register(networkOutputBinding, 'networkbinding');
-Shiny.outputBindings.register(visControlOutputBinding, 'viscontrolbinding');
-
 
 
 Shiny.addCustomMessageHandler("reset_colors",

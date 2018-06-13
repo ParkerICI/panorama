@@ -197,7 +197,6 @@ output$graphui_viscontrol <- reactive({
 
 output$graphui_plot = renderPlot({
     p <- NULL
-    #session$sendCustomMessage(type = "get_selected_nodes", list())
     if(!is.null(input$graphui_plot_clusters) && input$graphui_plot_clusters != 0)
     {
         isolate({

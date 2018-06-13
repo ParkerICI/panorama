@@ -37,7 +37,7 @@ class PixiGraph {
         else
             ret = val => ""
         return ret
-    };
+    }
     
     getCircleSprite() {
         let sprite = new PIXI.Sprite(this.circleTexture)
@@ -274,7 +274,8 @@ class PixiGraph {
 
             sprite.mousedown = e => {
                 if (e.data.originalEvent.shiftKey) {
-                    onNodeAddToSelection([i])
+                    e.currentTarget.tint = 0xFF0000
+                    onNodeAddToSelection(i)
                 }
             }
             /*
