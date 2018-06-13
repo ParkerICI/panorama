@@ -1,41 +1,86 @@
-//var addWheelListener = require('./addWheelListener');
-//var PIXI = require('pixi.js');
-//var d3 = require('d3');
-
 
 
 class PixiGraph {
     
-    constructor() {};
+    constructor(width, height, data) {
+        this.data = data
+        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true })
+        this.renderer.backgroundColor = 0xFFFFFF
 
-    getNodeFillScale(nodes, visControl) {
+        this.rootContainer = new PIXI.Container()
+        
+        this.graphContainer = new PIXI.Container()
+        this.nodeContainer = new PIXI.Container()
+        this.edgeContainer = new PIXI.Container()
+        this.graphContainer.interactive = true
+        this.nodeContainer.interactive = true
+        
+        this.graphContainer.addChild(this.edgeContainer)
+        this.graphContainer.addChild(this.nodeContainer)
+        this.rootContainer.addChild(this.graphContainer)
+        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
+    }
+
+
+    static getNodeFillScale(nodes, visControl) {
         var ret = null;
         
         if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
             var attr = visControl.nodeColorAttr;
             ret = d3.scale.linear()
-               .domain(d3.extent(nodes, function (d) { return d[attr]; }))
-               .range(["#132B43", "#56B1F7"])
-			   .interpolate(d3.interpolateLab);
+                    .domain(d3.extent(nodes, d => d[attr]))
+                    .range([visControl.colorMin, visControl.colorMax])
+			        .interpolate(d3.interpolateLab);
         }
         else
-            ret = function (val) { return ""; };
-        return ret;
+            ret = val => ""
+        return ret
     };
     
+    static getCircleSprite() {
+        let texture = this.getCircleTexture()
+        let sprite = new PIXI.Sprite(texture)
+        return(sprite)
+    }
     
+    static getRimForSprite(sprite) {
+
+        let rimSprite = this.getCircleSprite()
+        rimSprite.anchor = new PIXI.Point(0.5, 0.5);
+        rimSprite.tint = 0x000000
+        rimSprite.x = sprite.x
+        rimSprite.y = sprite.y
+        rimSprite.scale.x = sprite.scale.x + 0.01
+        rimSprite.scale.y = sprite.scale.y + 0.01
+        return(rimSprite)
+    }
     
-    
-    getNodeSizeScale(nodes, visControl) {
-        var ret = null;
+    static getEdgeGraphics(edges) {
+        let graphics = new PIXI.Graphics()
+        graphics.lineStyle(1, 0xE6E6E6, 1)
+
+        edges.forEach(d => {
+            graphics.moveTo(d.x1, d.y1)
+            graphics.lineTo(d.x2, d.y2)
+            graphics.endFill();
         
-        if (visControl.nodeSizeAttr && visControl.nodeSizeAttr != "") {
+        })
+
+        return(graphics)
+    }
+
+    static getNodeSizeScale(nodes, visControl) {
+        var ret = null;
+
+        var v = nodes.filter(d => !d.type || d.type != "landmark")
+
+        if (visControl.nodeSize == "Proportional") {
             ret = d3.scale.linear()
-            .range([visControl.minNodeSize, visControl.maxNodeSize])
-            .domain(d3.extent(nodes, function (d) { return d[visControl.nodeSizeAttr]; }));
+                    .range([visControl.minNodeSize, visControl.maxNodeSize])
+                    .domain(d3.extent(v, d => d.popsize));
         }
         else //Return a constant number
-            ret = function (val) { return visControl.minNodeSize; };
+            ret = val => 0.8 * visControl.landmarkNodeSize
         return ret;
     };
     
@@ -43,13 +88,13 @@ class PixiGraph {
     
     
     
-    getCircleTexture() {
-        var renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true });
+    static getCircleTexture() {
+        let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true });
         renderer.backgroundColor = 0xFFFFFF;
-        var graphics = new PIXI.Graphics();
+        let graphics = new PIXI.Graphics();
         graphics.beginFill(parseInt("FFFFFF", 16));
         graphics.drawCircle(50, 50, 50);
-        var container = new PIXI.Container();
+        let container = new PIXI.Container();
         
         
         container.addChild(graphics);
@@ -59,24 +104,9 @@ class PixiGraph {
     
     
     
-    addToDOM(domEl, width, height, onNodeNewSelection, onNodeAddToSelection) {
-        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true });
-        this.renderer.backgroundColor = 0xFFFFFF;
-        
-        // add the renderer view element to the DOM
+    addToDOM(domEl, onNodeNewSelection, onNodeAddToSelection) {
         domEl.appendChild(this.renderer.view);
-        this.rootContainer = new PIXI.Container();
-        
-        this.graphContainer = new PIXI.Container();
-        this.nodeContainer = new PIXI.Container();
-        this.edgeContainer = new PIXI.Container();
-        this.graphContainer.interactive = true;
-        this.nodeContainer.interactive = true;
-        
-        this.graphContainer.addChild(this.edgeContainer);
-        this.graphContainer.addChild(this.nodeContainer);
-        this.rootContainer.addChild(this.graphContainer);
-        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height);
+
         this.onNodeNewSelection = onNodeNewSelection;
 
         this.onNodeAddToSelection = onNodeAddToSelection;
@@ -109,7 +139,7 @@ class PixiGraph {
         
         
         
-        addWheelListener(domEl, function (e) {
+        domEl.addEventListener("wheel", e => {
             e.stopPropagation();
             e.preventDefault();
             zoom(e.clientX, e.clientY, e.deltaY < 0);
@@ -135,12 +165,12 @@ class PixiGraph {
   
         
 
-        var clearCurrentSelection = function () {
+        var clearCurrentSelection = () => {
             rectangleContainer.removeChildren();
-            nodeContainer.children.forEach(function (n) { n.tint = n.cachedTint });
+            nodeContainer.children.forEach(n => n.tint = n.cachedTint)
         }
         
-        graphContainer.mousedown = function (e) {
+        graphContainer.mousedown = e => {
             var pos = e.data.getLocalPosition(graphContainer);
             prevX = pos.x;
             prevY = pos.y;
@@ -158,7 +188,7 @@ class PixiGraph {
             renderer.render(graphContainer);
         };
         
-        graphContainer.mousemove = function (e) {
+        graphContainer.mousemove = e => {
             var pos = e.data.getLocalPosition(graphContainer);
             
             if (isDragging) {
@@ -186,7 +216,7 @@ class PixiGraph {
                 rectangleContainer.addChild(rectGraphics);
                 var rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight);
                 curSelNodesIdx = [];
-                nodeContainer.children.forEach(function (n, i) {
+                nodeContainer.children.forEach((n, i) => {
                     if (rect.contains(n.x, n.y)) {
                         n.tint = 0xFF0000;
                         curSelNodesIdx.push(i);
@@ -197,7 +227,7 @@ class PixiGraph {
 
         };
         
-        graphContainer.mouseup = function (e) {
+        graphContainer.mouseup = e => {
 
             rectangleContainer.removeChildren();
             edgeContainer.visible = true;
@@ -210,76 +240,84 @@ class PixiGraph {
         };
     }
 
-    draw(data, visControl) {
-        console.log("Drawing");
-        var nodes = data.nodes;
-        var edges = data.edges;
-        var nodeContainer = this.nodeContainer;
-        var edgeContainer = this.edgeContainer;
-        var graphContainer = this.graphContainer;
-        var onNodeAddToSelection = this.onNodeAddToSelection;
-        var onNodeNewSelection = this.onNodeNewSelection;
-        var nodeFillScale = this.getNodeFillScale(nodes, visControl);
-        var nodeSizeScale = this.getNodeSizeScale(nodes, visControl);
+    draw(visControl) {
+
+        if(!this.data)
+            return
+
+        var nodes = this.data.nodes
+        var edges = this.data.edges
+        var nodeContainer = this.nodeContainer
+        var nodeRimContainer = this.nodeRimContainer
+        var edgeContainer = this.edgeContainer
+        var graphContainer = this.graphContainer
+        var onNodeAddToSelection = this.onNodeAddToSelection
+        var onNodeNewSelection = this.onNodeNewSelection
+        var nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)
+        var nodeSizeScale = PixiGraph.getNodeSizeScale(nodes, visControl)
         
-        var circleSprite = this.getCircleTexture();
+        nodeContainer.removeChildren()
+        edgeContainer.removeChildren()
+
+        let edgeGraphics = PixiGraph.getEdgeGraphics(edges)
+        edgeContainer.addChild(edgeGraphics);
         
-        nodeContainer.removeChildren();
-        edgeContainer.removeChildren();
-        /*
-        edges.map(function (d) {
-            var graphics = new PIXI.Graphics();
-            var color = d.hasOwnProperty("stroke") ? d.stroke : 0xE6E6E6;
-            var size = d.hasOwnProperty("stroke_width") ? d.stroke_width : 1;
-            graphics.lineStyle(size , color, 1);
-            graphics.moveTo(d.x1, d.y1);
-            graphics.lineTo(d.x2, d.y2);
-            graphics.endFill();
-            edgeContainer.addChild(graphics);
-        });
-        */
-        
-        nodes.map(function (d, i) {
-            var sprite = new PIXI.Sprite(circleSprite);
-            sprite.x = d.x;
-            sprite.y = d.y;
-            sprite.interactive = true;
+        nodes.map((d, i) => {
+            var sprite = PixiGraph.getCircleSprite()
+            sprite.x = d.x
+            sprite.y = d.y
+            sprite.interactive = true
             
-            var sizeScale = nodeSizeScale(d[visControl.nodeSizeAttr]);
-            sprite.scale.x = 0.02 * sizeScale;
-            sprite.scale.y = 0.02 * sizeScale;
+            var size = 0
+            
+            if(d.type && d.type == "landmark")
+                size = visControl.landmarkNodeSize
+            else
+                size = nodeSizeScale(d.popsize)
+            
+            sprite.scale.x = 0.005 * size
+            sprite.scale.y = 0.005 * size
             //Given that the anchor point is in the middle the x and y of the hitArea are 0
             //Also 50 is the radius of the original sprite that then gets scaled down
-            sprite.hitArea = new PIXI.Circle(0, 0, 50);
-            
-            
-            
-            sprite.mousedown = function (e) {
-                if (e.data.originalEvent.shiftKey) {
-                    onNodeAddToSelection([i]);
-                }
+            sprite.hitArea = new PIXI.Circle(0, 0, 50)
 
+            sprite.mousedown = e => {
+                if (e.data.originalEvent.shiftKey) {
+                    onNodeAddToSelection([i])
+                }
             }
             /*
             sprite.mouseover = function (e) {
                 console.log("Hovering");
             }*/
+            var col = null
+
+            if(visControl.nodeColorAttr == "Default") {
+                if(d.type && d.type == "landmark")
+                    col = 0xFF7580
+                else
+                    col = 0x4F93DE
+
+            }
+            else
+                col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16)
             
-            var col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16);
             sprite.tint = col;
             sprite.cachedTint = col;
             sprite.anchor = new PIXI.Point(0.5, 0.5);
-            nodeContainer.addChild(sprite);
 
-        });
+            var rimSprite = PixiGraph.getRimForSprite(sprite)
+
+            nodeContainer.addChild(rimSprite)
+            nodeContainer.addChild(sprite)
+        })
         
         
         if (visControl.selectedNodesIdx && visControl.selectedNodesIdx.length) 
-            visControl.selectedNodesIdx.forEach(function (i) { nodeContainer.getChildAt(i).tint = 0xFF0000; });
-               
-        this.renderer.render(this.rootContainer);
+            visControl.selectedNodesIdx.forEach(i => nodeContainer.getChildAt(i).tint = 0xFF0000)
+        
+        this.renderer.render(this.rootContainer)
     }
     
 }
-
 
