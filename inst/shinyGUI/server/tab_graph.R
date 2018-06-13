@@ -19,7 +19,6 @@ render_graph_ui <- function(working.directory, ...){renderUI({
 fluidPage(
     fluidRow(
         column(6,
-          
             visControl("graphui_viscontrol"),
             reactiveNetwork(outputId = "graphui_mainnet")
         ),

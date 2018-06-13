@@ -32,21 +32,23 @@ class PixiGraph {
     
     constructor(width, height, data) {
         this.data = data
-        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true });
-        this.renderer.backgroundColor = 0xFFFFFF;
+        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true })
+        this.renderer.backgroundColor = 0xFFFFFF
 
-        this.rootContainer = new PIXI.Container();
+        this.rootContainer = new PIXI.Container()
         
-        this.graphContainer = new PIXI.Container();
-        this.nodeContainer = new PIXI.Container();
-        this.edgeContainer = new PIXI.Container();
-        this.graphContainer.interactive = true;
-        this.nodeContainer.interactive = true;
+        this.graphContainer = new PIXI.Container()
+        this.nodeRimContainer = new PIXI.Container()
+        this.nodeContainer = new PIXI.Container()
+        this.edgeContainer = new PIXI.Container()
+        this.graphContainer.interactive = true
+        this.nodeContainer.interactive = true
         
-        this.graphContainer.addChild(this.edgeContainer);
-        this.graphContainer.addChild(this.nodeContainer);
-        this.rootContainer.addChild(this.graphContainer);
-        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height);
+        this.graphContainer.addChild(this.edgeContainer)
+        this.graphContainer.addChild(this.nodeRimContainer)
+        this.graphContainer.addChild(this.nodeContainer)
+        this.rootContainer.addChild(this.graphContainer)
+        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
     }
 
 
@@ -62,7 +64,7 @@ class PixiGraph {
         }
         else
             ret = val => ""
-        return ret;
+        return ret
     };
     
     
@@ -242,26 +244,27 @@ class PixiGraph {
     draw(visControl) {
 
         if(!this.data)
-            return;
+            return
 
-        var nodes = this.data.nodes;
-        var edges = this.data.edges;
-        var nodeContainer = this.nodeContainer;
-        var edgeContainer = this.edgeContainer;
-        var graphContainer = this.graphContainer;
-        var onNodeAddToSelection = this.onNodeAddToSelection;
-        var onNodeNewSelection = this.onNodeNewSelection;
-        var nodeFillScale = this.getNodeFillScale(nodes, visControl);
-        var nodeSizeScale = this.getNodeSizeScale(nodes, visControl);
+        var nodes = this.data.nodes
+        var edges = this.data.edges
+        var nodeContainer = this.nodeContainer
+        var nodeRimContainer = this.nodeRimContainer
+        var edgeContainer = this.edgeContainer
+        var graphContainer = this.graphContainer
+        var onNodeAddToSelection = this.onNodeAddToSelection
+        var onNodeNewSelection = this.onNodeNewSelection
+        var nodeFillScale = this.getNodeFillScale(nodes, visControl)
+        var nodeSizeScale = this.getNodeSizeScale(nodes, visControl)
         
-        var circleSprite = this.getCircleTexture();
+        var circleSprite = this.getCircleTexture()
         
-        nodeContainer.removeChildren();
-        edgeContainer.removeChildren();
+        nodeContainer.removeChildren()
+        edgeContainer.removeChildren()
  
-        var graphics = new PIXI.Graphics();
+        var graphics = new PIXI.Graphics()
 
-        graphics.lineStyle(1, 0xE6E6E6, 1);
+        graphics.lineStyle(1, 0xE6E6E6, 1)
 
         edges.map(d => {
             graphics.moveTo(d.x1, d.y1)
@@ -273,27 +276,27 @@ class PixiGraph {
         edgeContainer.addChild(graphics);
         
         nodes.map((d, i) => {
-            var sprite = new PIXI.Sprite(circleSprite);
-            sprite.x = d.x;
-            sprite.y = d.y;
-            sprite.interactive = true;
+            var sprite = new PIXI.Sprite(circleSprite)
+            sprite.x = d.x
+            sprite.y = d.y
+            sprite.interactive = true
             
             var size = 0
             
             if(d.type && d.type == "landmark")
                 size = visControl.landmarkNodeSize
             else
-                size = nodeSizeScale(d.popsize);
+                size = nodeSizeScale(d.popsize)
             
-            sprite.scale.x = 0.005 * size;
-            sprite.scale.y = 0.005 * size;
+            sprite.scale.x = 0.005 * size
+            sprite.scale.y = 0.005 * size
             //Given that the anchor point is in the middle the x and y of the hitArea are 0
             //Also 50 is the radius of the original sprite that then gets scaled down
-            sprite.hitArea = new PIXI.Circle(0, 0, 50);
+            sprite.hitArea = new PIXI.Circle(0, 0, 50)
 
             sprite.mousedown = e => {
                 if (e.data.originalEvent.shiftKey) {
-                    onNodeAddToSelection([i]);
+                    onNodeAddToSelection([i])
                 }
             }
             /*
@@ -310,20 +313,29 @@ class PixiGraph {
 
             }
             else
-                col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16);
+                col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16)
             
-                sprite.tint = col;
+            sprite.tint = col;
             sprite.cachedTint = col;
             sprite.anchor = new PIXI.Point(0.5, 0.5);
-            nodeContainer.addChild(sprite);
 
-        });
+            nodeContainer.addChild(sprite)
+
+            var rimSprite = new PIXI.Sprite(circleSprite)
+            rimSprite.anchor = new PIXI.Point(0.5, 0.5);
+            rimSprite.tint = 0x000000
+            rimSprite.x = sprite.x
+            rimSprite.y = sprite.y
+            rimSprite.scale.x = sprite.scale.x + 0.01
+            rimSprite.scale.y = sprite.scale.y + 0.01
+            nodeRimContainer.addChild(rimSprite)
+        })
         
         
         if (visControl.selectedNodesIdx && visControl.selectedNodesIdx.length) 
-            visControl.selectedNodesIdx.forEach(i => nodeContainer.getChildAt(i).tint = 0xFF0000);
-               
-        this.renderer.render(this.rootContainer);
+            visControl.selectedNodesIdx.forEach(i => nodeContainer.getChildAt(i).tint = 0xFF0000)
+        
+        this.renderer.render(this.rootContainer)
     }
     
 }
