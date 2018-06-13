@@ -23,10 +23,10 @@ class PixiGraph {
 
 
     static getNodeFillScale(nodes, visControl) {
-        var ret = null;
+        let ret = null;
         
         if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
-            var attr = visControl.nodeColorAttr;
+            let attr = visControl.nodeColorAttr;
             ret = d3.scale.linear()
                     .domain(d3.extent(nodes, d => d[attr]))
                     .range([visControl.colorMin, visControl.colorMax])
@@ -70,9 +70,9 @@ class PixiGraph {
     }
 
     static getNodeSizeScale(nodes, visControl) {
-        var ret = null;
+        let ret = null;
 
-        var v = nodes.filter(d => !d.type || d.type != "landmark")
+        let v = nodes.filter(d => !d.type || d.type != "landmark")
 
         if (visControl.nodeSize == "Proportional") {
             ret = d3.scale.linear()
@@ -111,13 +111,13 @@ class PixiGraph {
 
         this.onNodeAddToSelection = onNodeAddToSelection;
         
-        var zoom = (function (rootContainer, graphContainer, 
+        let zoom = (function (rootContainer, graphContainer, 
             edgeContainer, renderer) {
             return function (x, y, isZoomIn) {
-                var beforeTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer);
+                let beforeTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer);
                 
-                var direction = isZoomIn ? 1 : -1;
-                var factor = (1 + direction * 0.1);
+                let direction = isZoomIn ? 1 : -1;
+                let factor = (1 + direction * 0.1);
                 edgeContainer.visible = false;
                 graphContainer.scale.x *= factor;
                 graphContainer.scale.y *= factor;
@@ -128,7 +128,7 @@ class PixiGraph {
                 
                 
                 graphContainer.updateTransform();
-                var afterTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer);
+                let afterTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer);
                 
                 graphContainer.position.x += (afterTransform.x - beforeTransform.x) * graphContainer.scale.x;
                 graphContainer.position.y += (afterTransform.y - beforeTransform.y) * graphContainer.scale.y;
@@ -149,29 +149,29 @@ class PixiGraph {
     }
     
     addDragNDrop() {
-        var isDragging = false,
+        let isDragging = false,
             prevX, prevY,
             mouseDownX, mouseDownY;
-        var isSelecting = false;
-        var rectangleContainer = new PIXI.Container;
-        var nodeContainer = this.nodeContainer;
-        var edgeContainer = this.edgeContainer;
-        var graphContainer = this.graphContainer;
+        let isSelecting = false;
+        let rectangleContainer = new PIXI.Container;
+        let nodeContainer = this.nodeContainer;
+        let edgeContainer = this.edgeContainer;
+        let graphContainer = this.graphContainer;
         graphContainer.addChild(rectangleContainer);
 
-        var renderer = this.renderer;
-        var curSelNodesIdx = [];
-        var onNodeNewSelection = this.onNodeNewSelection;
+        let renderer = this.renderer;
+        let curSelNodesIdx = [];
+        let onNodeNewSelection = this.onNodeNewSelection;
   
         
 
-        var clearCurrentSelection = () => {
+        let clearCurrentSelection = () => {
             rectangleContainer.removeChildren();
             nodeContainer.children.forEach(n => n.tint = n.cachedTint)
         }
         
         graphContainer.mousedown = e => {
-            var pos = e.data.getLocalPosition(graphContainer);
+            let pos = e.data.getLocalPosition(graphContainer);
             prevX = pos.x;
             prevY = pos.y;
             
@@ -189,11 +189,11 @@ class PixiGraph {
         };
         
         graphContainer.mousemove = e => {
-            var pos = e.data.getLocalPosition(graphContainer);
+            let pos = e.data.getLocalPosition(graphContainer);
             
             if (isDragging) {
-                var dx = pos.x - mouseDownX;
-                var dy = pos.y - mouseDownY;
+                let dx = pos.x - mouseDownX;
+                let dy = pos.y - mouseDownY;
                 
                 graphContainer.position.x += dx;
                 graphContainer.position.y += dy;
@@ -203,9 +203,9 @@ class PixiGraph {
             }
             else if (isSelecting) {
                 clearCurrentSelection();
-                var rectWidth = pos.x - mouseDownX;
-                var rectHeight = pos.y - mouseDownY;
-                var rectGraphics = new PIXI.Graphics();
+                let rectWidth = pos.x - mouseDownX;
+                let rectHeight = pos.y - mouseDownY;
+                let rectGraphics = new PIXI.Graphics();
                 rectGraphics.lineStyle(2, 0xFF0000);
                 rectGraphics.drawRect(
                     mouseDownX,
@@ -214,7 +214,7 @@ class PixiGraph {
 					    rectHeight 
                 );
                 rectangleContainer.addChild(rectGraphics);
-                var rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight);
+                let rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight);
                 curSelNodesIdx = [];
                 nodeContainer.children.forEach((n, i) => {
                     if (rect.contains(n.x, n.y)) {
@@ -245,16 +245,16 @@ class PixiGraph {
         if(!this.data)
             return
 
-        var nodes = this.data.nodes
-        var edges = this.data.edges
-        var nodeContainer = this.nodeContainer
-        var nodeRimContainer = this.nodeRimContainer
-        var edgeContainer = this.edgeContainer
-        var graphContainer = this.graphContainer
-        var onNodeAddToSelection = this.onNodeAddToSelection
-        var onNodeNewSelection = this.onNodeNewSelection
-        var nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)
-        var nodeSizeScale = PixiGraph.getNodeSizeScale(nodes, visControl)
+        let nodes = this.data.nodes
+        let edges = this.data.edges
+        let nodeContainer = this.nodeContainer
+        let nodeRimContainer = this.nodeRimContainer
+        let edgeContainer = this.edgeContainer
+        let graphContainer = this.graphContainer
+        let onNodeAddToSelection = this.onNodeAddToSelection
+        let onNodeNewSelection = this.onNodeNewSelection
+        let nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)
+        let nodeSizeScale = PixiGraph.getNodeSizeScale(nodes, visControl)
         
         nodeContainer.removeChildren()
         edgeContainer.removeChildren()
@@ -263,12 +263,12 @@ class PixiGraph {
         edgeContainer.addChild(edgeGraphics);
         
         nodes.map((d, i) => {
-            var sprite = PixiGraph.getCircleSprite()
+            let sprite = PixiGraph.getCircleSprite()
             sprite.x = d.x
             sprite.y = d.y
             sprite.interactive = true
             
-            var size = 0
+            let size = 0
             
             if(d.type && d.type == "landmark")
                 size = visControl.landmarkNodeSize
@@ -290,7 +290,7 @@ class PixiGraph {
             sprite.mouseover = function (e) {
                 console.log("Hovering");
             }*/
-            var col = null
+            let col = null
 
             if(visControl.nodeColorAttr == "Default") {
                 if(d.type && d.type == "landmark")
@@ -306,7 +306,7 @@ class PixiGraph {
             sprite.cachedTint = col;
             sprite.anchor = new PIXI.Point(0.5, 0.5);
 
-            var rimSprite = PixiGraph.getRimForSprite(sprite)
+            let rimSprite = PixiGraph.getRimForSprite(sprite)
 
             nodeContainer.addChild(rimSprite)
             nodeContainer.addChild(sprite)
