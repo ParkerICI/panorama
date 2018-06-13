@@ -41,12 +41,12 @@ class PixiGraph {
         if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
             var attr = visControl.nodeColorAttr;
             ret = d3.scale.linear()
-                    .domain(d3.extent(nodes, function (d) { return d[attr]; }))
+                    .domain(d3.extent(nodes, d => d[attr]))
                     .range([visControl.colorMin, visControl.colorMax])
 			        .interpolate(d3.interpolateLab);
         }
         else
-            ret = function (val) { return ""; };
+            ret = val => ""
         return ret;
     };
     
@@ -57,7 +57,7 @@ class PixiGraph {
         var ret = null;
 
         var v = nodes.filter(d => !d.type || d.type != "landmark")
-        
+
         if (visControl.nodeSize == "Proportional") {
             ret = d3.scale.linear()
                     .range([visControl.minNodeSize, visControl.maxNodeSize])
@@ -138,7 +138,7 @@ class PixiGraph {
         
         
         
-        domEl.addEventListener("wheel", function (e) {
+        domEl.addEventListener("wheel", e => {
             e.stopPropagation();
             e.preventDefault();
             zoom(e.clientX, e.clientY, e.deltaY < 0);
@@ -164,12 +164,12 @@ class PixiGraph {
   
         
 
-        var clearCurrentSelection = function () {
+        var clearCurrentSelection = () => {
             rectangleContainer.removeChildren();
-            nodeContainer.children.forEach(function (n) { n.tint = n.cachedTint });
+            nodeContainer.children.forEach(n => n.tint = n.cachedTint)
         }
         
-        graphContainer.mousedown = function (e) {
+        graphContainer.mousedown = e => {
             var pos = e.data.getLocalPosition(graphContainer);
             prevX = pos.x;
             prevY = pos.y;
@@ -187,7 +187,7 @@ class PixiGraph {
             renderer.render(graphContainer);
         };
         
-        graphContainer.mousemove = function (e) {
+        graphContainer.mousemove = e => {
             var pos = e.data.getLocalPosition(graphContainer);
             
             if (isDragging) {
@@ -215,7 +215,7 @@ class PixiGraph {
                 rectangleContainer.addChild(rectGraphics);
                 var rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight);
                 curSelNodesIdx = [];
-                nodeContainer.children.forEach(function (n, i) {
+                nodeContainer.children.forEach((n, i) => {
                     if (rect.contains(n.x, n.y)) {
                         n.tint = 0xFF0000;
                         curSelNodesIdx.push(i);
@@ -226,7 +226,7 @@ class PixiGraph {
 
         };
         
-        graphContainer.mouseup = function (e) {
+        graphContainer.mouseup = e => {
 
             rectangleContainer.removeChildren();
             edgeContainer.visible = true;
@@ -263,7 +263,7 @@ class PixiGraph {
 
         graphics.lineStyle(1, 0xE6E6E6, 1);
 
-        edges.map(function (d) {
+        edges.map(d => {
             graphics.moveTo(d.x1, d.y1)
             graphics.lineTo(d.x2, d.y2)
             graphics.endFill();
@@ -272,7 +272,7 @@ class PixiGraph {
 
         edgeContainer.addChild(graphics);
         
-        nodes.map(function (d, i) {
+        nodes.map((d, i) => {
             var sprite = new PIXI.Sprite(circleSprite);
             sprite.x = d.x;
             sprite.y = d.y;
@@ -291,7 +291,7 @@ class PixiGraph {
             //Also 50 is the radius of the original sprite that then gets scaled down
             sprite.hitArea = new PIXI.Circle(0, 0, 50);
 
-            sprite.mousedown = function (e) {
+            sprite.mousedown = e => {
                 if (e.data.originalEvent.shiftKey) {
                     onNodeAddToSelection([i]);
                 }
@@ -321,7 +321,7 @@ class PixiGraph {
         
         
         if (visControl.selectedNodesIdx && visControl.selectedNodesIdx.length) 
-            visControl.selectedNodesIdx.forEach(function (i) { nodeContainer.getChildAt(i).tint = 0xFF0000; });
+            visControl.selectedNodesIdx.forEach(i => nodeContainer.getChildAt(i).tint = 0xFF0000);
                
         this.renderer.render(this.rootContainer);
     }
@@ -335,11 +335,11 @@ var visControlOutputBinding = new Shiny.OutputBinding();
 
 
 $.extend(visControlOutputBinding, {
-    find: function(scope) {
+    find: scope => {
         return $(scope).find('.shiny-vis-control');
     },
     
-    renderValue: function(el, visControl) {
+    renderValue: (el, visControl) => {
         if(!visControl)
             return
         
@@ -354,11 +354,11 @@ var networkOutputBinding = new Shiny.OutputBinding();
 
 $.extend(networkOutputBinding, {
 
-         find: function(scope) {
+         find: scope => {
             return $(scope).find('.shiny-network-output');
          },
 
-         renderValue: function(el, Rdata) {
+         renderValue: (el, Rdata) => {
             if(Rdata == null) return;
 
             if(!el.hasChildNodes())
