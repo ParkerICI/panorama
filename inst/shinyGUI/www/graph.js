@@ -30,8 +30,23 @@ function parse_trans_string (a)
 
 class PixiGraph {
     
-    constructor(data) {
+    constructor(width, height, data) {
         this.data = data
+        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true });
+        this.renderer.backgroundColor = 0xFFFFFF;
+
+        this.rootContainer = new PIXI.Container();
+        
+        this.graphContainer = new PIXI.Container();
+        this.nodeContainer = new PIXI.Container();
+        this.edgeContainer = new PIXI.Container();
+        this.graphContainer.interactive = true;
+        this.nodeContainer.interactive = true;
+        
+        this.graphContainer.addChild(this.edgeContainer);
+        this.graphContainer.addChild(this.nodeContainer);
+        this.rootContainer.addChild(this.graphContainer);
+        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height);
     }
 
 
@@ -88,24 +103,9 @@ class PixiGraph {
     
     
     
-    addToDOM(domEl, width, height, onNodeNewSelection, onNodeAddToSelection) {
-        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true });
-        this.renderer.backgroundColor = 0xFFFFFF;
-        
-        // add the renderer view element to the DOM
+    addToDOM(domEl, onNodeNewSelection, onNodeAddToSelection) {
         domEl.appendChild(this.renderer.view);
-        this.rootContainer = new PIXI.Container();
-        
-        this.graphContainer = new PIXI.Container();
-        this.nodeContainer = new PIXI.Container();
-        this.edgeContainer = new PIXI.Container();
-        this.graphContainer.interactive = true;
-        this.nodeContainer.interactive = true;
-        
-        this.graphContainer.addChild(this.edgeContainer);
-        this.graphContainer.addChild(this.nodeContainer);
-        this.rootContainer.addChild(this.graphContainer);
-        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height);
+
         this.onNodeNewSelection = onNodeNewSelection;
 
         this.onNodeAddToSelection = onNodeAddToSelection;
@@ -329,7 +329,7 @@ class PixiGraph {
 }
 
 
-var pixiGraph = new PixiGraph(null);
+var pixiGraph = new PixiGraph(1200, 800, null);
 
 var visControlOutputBinding = new Shiny.OutputBinding();
 
@@ -362,7 +362,7 @@ $.extend(networkOutputBinding, {
             if(Rdata == null) return;
 
             if(!el.hasChildNodes())
-                pixiGraph.addToDOM(el, 1200, 800, () => {}, () => {})
+                pixiGraph.addToDOM(el, () => {}, () => {})
             
             var data = {
                 nodes: JSON.parse(Rdata.nodes),

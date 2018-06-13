@@ -1,5 +1,12 @@
 
 ui <- navbarPage("SCAFFoLD",
+    header = list(tags$head(tags$script(src = "d3.min.js")),
+        tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.7.1/pixi.js")),
+        tags$head(tags$script(src = "graph.js")),
+        tags$head(tags$script(src = "rect_select.js")),
+        singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'rect_select.css'))),
+        singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'graph.css')))
+    ),
     tabPanel("Map exploration", uiOutput("graphUI"))
     #tabPanel("Run SCAFFoLD Analysis", uiOutput("analysisUI")),
     #tabPanel("Run clustering", uiOutput("clusteringUI")),
