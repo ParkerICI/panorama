@@ -19,40 +19,29 @@ class PixiGraph {
         this.graphContainer.addChild(this.nodeContainer)
         this.rootContainer.addChild(this.graphContainer)
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
+
+        this.circleTexture = PixiGraph.getCircleTexture()
     }
 
 
     static getNodeFillScale(nodes, visControl) {
-        let ret = null;
+        let ret = null
         
         if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
-            let attr = visControl.nodeColorAttr;
+            let attr = visControl.nodeColorAttr
             ret = d3.scale.linear()
                     .domain(d3.extent(nodes, d => d[attr]))
                     .range([visControl.colorMin, visControl.colorMax])
-			        .interpolate(d3.interpolateLab);
+			        .interpolate(d3.interpolateLab)
         }
         else
             ret = val => ""
         return ret
     };
     
-    static getCircleSprite() {
-        let texture = this.getCircleTexture()
-        let sprite = new PIXI.Sprite(texture)
+    getCircleSprite() {
+        let sprite = new PIXI.Sprite(this.circleTexture)
         return(sprite)
-    }
-    
-    static getRimForSprite(sprite) {
-
-        let rimSprite = this.getCircleSprite()
-        rimSprite.anchor = new PIXI.Point(0.5, 0.5);
-        rimSprite.tint = 0x000000
-        rimSprite.x = sprite.x
-        rimSprite.y = sprite.y
-        rimSprite.scale.x = sprite.scale.x + 0.01
-        rimSprite.scale.y = sprite.scale.y + 0.01
-        return(rimSprite)
     }
     
     static getEdgeGraphics(edges) {
@@ -62,7 +51,7 @@ class PixiGraph {
         edges.forEach(d => {
             graphics.moveTo(d.x1, d.y1)
             graphics.lineTo(d.x2, d.y2)
-            graphics.endFill();
+            graphics.endFill()
         
         })
 
@@ -70,174 +59,176 @@ class PixiGraph {
     }
 
     static getNodeSizeScale(nodes, visControl) {
-        let ret = null;
+        let ret = null
 
         let v = nodes.filter(d => !d.type || d.type != "landmark")
 
         if (visControl.nodeSize == "Proportional") {
             ret = d3.scale.linear()
                     .range([visControl.minNodeSize, visControl.maxNodeSize])
-                    .domain(d3.extent(v, d => d.popsize));
+                    .domain(d3.extent(v, d => d.popsize))
         }
         else //Return a constant number
             ret = val => 0.8 * visControl.landmarkNodeSize
-        return ret;
-    };
+        return ret
+    }
     
     
     
     
     
     static getCircleTexture() {
-        let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true });
-        renderer.backgroundColor = 0xFFFFFF;
-        let graphics = new PIXI.Graphics();
-        graphics.beginFill(parseInt("FFFFFF", 16));
-        graphics.drawCircle(50, 50, 50);
-        let container = new PIXI.Container();
+        let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true })
+        renderer.backgroundColor = 0xFFFFFF
+        let graphics = new PIXI.Graphics()
+        graphics.beginFill(0x000000)
+        graphics.drawCircle(50, 50, 50)
+        graphics.beginFill(0xFFFFFF)
+        graphics.drawCircle(50, 50, 45)
+        let container = new PIXI.Container()
         
         
-        container.addChild(graphics);
-        renderer.render(container);
+        container.addChild(graphics)
+        renderer.render(container)
         return (PIXI.Texture.fromCanvas(renderer.view))
     }
     
     
     
     addToDOM(domEl, onNodeNewSelection, onNodeAddToSelection) {
-        domEl.appendChild(this.renderer.view);
+        domEl.appendChild(this.renderer.view)
 
-        this.onNodeNewSelection = onNodeNewSelection;
+        this.onNodeNewSelection = onNodeNewSelection
 
-        this.onNodeAddToSelection = onNodeAddToSelection;
+        this.onNodeAddToSelection = onNodeAddToSelection
         
         let zoom = (function (rootContainer, graphContainer, 
             edgeContainer, renderer) {
             return function (x, y, isZoomIn) {
-                let beforeTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer);
+                let beforeTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer)
                 
-                let direction = isZoomIn ? 1 : -1;
-                let factor = (1 + direction * 0.1);
-                edgeContainer.visible = false;
-                graphContainer.scale.x *= factor;
-                graphContainer.scale.y *= factor;
-                graphContainer.updateTransform();
-                
-                
-                setTimeout(function () { edgeContainer.visible = true; renderer.render(rootContainer) }, 200);
+                let direction = isZoomIn ? 1 : -1
+                let factor = (1 + direction * 0.1)
+                edgeContainer.visible = false
+                graphContainer.scale.x *= factor
+                graphContainer.scale.y *= factor
+                graphContainer.updateTransform()
                 
                 
-                graphContainer.updateTransform();
-                let afterTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer);
+                setTimeout(function () { edgeContainer.visible = true; renderer.render(rootContainer) }, 200)
                 
-                graphContainer.position.x += (afterTransform.x - beforeTransform.x) * graphContainer.scale.x;
-                graphContainer.position.y += (afterTransform.y - beforeTransform.y) * graphContainer.scale.y;
-                graphContainer.updateTransform();
-                renderer.render(rootContainer);
+                
+                graphContainer.updateTransform()
+                let afterTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer)
+                
+                graphContainer.position.x += (afterTransform.x - beforeTransform.x) * graphContainer.scale.x
+                graphContainer.position.y += (afterTransform.y - beforeTransform.y) * graphContainer.scale.y
+                graphContainer.updateTransform()
+                renderer.render(rootContainer)
             }
-        })(this.rootContainer, this.graphContainer, this.edgeContainer, this.renderer);
+        })(this.rootContainer, this.graphContainer, this.edgeContainer, this.renderer)
         
         
         
         domEl.addEventListener("wheel", e => {
-            e.stopPropagation();
-            e.preventDefault();
-            zoom(e.clientX, e.clientY, e.deltaY < 0);
-        });
+            e.stopPropagation()
+            e.preventDefault()
+            zoom(e.clientX, e.clientY, e.deltaY < 0)
+        })
 
-        this.addDragNDrop();
+        this.addDragNDrop()
     }
     
     addDragNDrop() {
         let isDragging = false,
             prevX, prevY,
-            mouseDownX, mouseDownY;
-        let isSelecting = false;
-        let rectangleContainer = new PIXI.Container;
-        let nodeContainer = this.nodeContainer;
-        let edgeContainer = this.edgeContainer;
-        let graphContainer = this.graphContainer;
-        graphContainer.addChild(rectangleContainer);
+            mouseDownX, mouseDownY
+        let isSelecting = false
+        let rectangleContainer = new PIXI.Container
+        let nodeContainer = this.nodeContainer
+        let edgeContainer = this.edgeContainer
+        let graphContainer = this.graphContainer
+        graphContainer.addChild(rectangleContainer)
 
-        let renderer = this.renderer;
-        let curSelNodesIdx = [];
-        let onNodeNewSelection = this.onNodeNewSelection;
+        let renderer = this.renderer
+        let curSelNodesIdx = []
+        let onNodeNewSelection = this.onNodeNewSelection
   
         
 
         let clearCurrentSelection = () => {
-            rectangleContainer.removeChildren();
+            rectangleContainer.removeChildren()
             nodeContainer.children.forEach(n => n.tint = n.cachedTint)
         }
         
         graphContainer.mousedown = e => {
-            let pos = e.data.getLocalPosition(graphContainer);
-            prevX = pos.x;
-            prevY = pos.y;
+            let pos = e.data.getLocalPosition(graphContainer)
+            prevX = pos.x
+            prevY = pos.y
             
-            mouseDownX = prevX;
-            mouseDownY = prevY;
+            mouseDownX = prevX
+            mouseDownY = prevY
             if (e.data.originalEvent.altKey) {
-                isSelecting = true;
-                clearCurrentSelection();
+                isSelecting = true
+                clearCurrentSelection()
             }
             else {
-                isDragging = true;
-                edgeContainer.visible = false;
+                isDragging = true
+                edgeContainer.visible = false
             }
-            renderer.render(graphContainer);
-        };
-        
+            renderer.render(graphContainer)
+        }
+    
         graphContainer.mousemove = e => {
-            let pos = e.data.getLocalPosition(graphContainer);
+            let pos = e.data.getLocalPosition(graphContainer)
             
             if (isDragging) {
-                let dx = pos.x - mouseDownX;
-                let dy = pos.y - mouseDownY;
+                let dx = pos.x - mouseDownX
+                let dy = pos.y - mouseDownY
                 
-                graphContainer.position.x += dx;
-                graphContainer.position.y += dy;
-                graphContainer.updateTransform();
+                graphContainer.position.x += dx
+                graphContainer.position.y += dy
+                graphContainer.updateTransform()
                 
-                prevX = pos.x; prevY = pos.y;
+                prevX = pos.x; prevY = pos.y
             }
             else if (isSelecting) {
-                clearCurrentSelection();
-                let rectWidth = pos.x - mouseDownX;
-                let rectHeight = pos.y - mouseDownY;
-                let rectGraphics = new PIXI.Graphics();
-                rectGraphics.lineStyle(2, 0xFF0000);
+                clearCurrentSelection()
+                let rectWidth = pos.x - mouseDownX
+                let rectHeight = pos.y - mouseDownY
+                let rectGraphics = new PIXI.Graphics()
+                rectGraphics.lineStyle(2, 0xFF0000)
                 rectGraphics.drawRect(
                     mouseDownX,
 					    mouseDownY,
 					    rectWidth,
 					    rectHeight 
-                );
-                rectangleContainer.addChild(rectGraphics);
-                let rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight);
-                curSelNodesIdx = [];
+                )
+                rectangleContainer.addChild(rectGraphics)
+                let rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight)
+                curSelNodesIdx = []
                 nodeContainer.children.forEach((n, i) => {
                     if (rect.contains(n.x, n.y)) {
-                        n.tint = 0xFF0000;
-                        curSelNodesIdx.push(i);
+                        n.tint = 0xFF0000
+                        curSelNodesIdx.push(i)
                     }
-                });
+                })
             }
-            renderer.render(graphContainer);
+            renderer.render(graphContainer)
 
-        };
+        }
         
         graphContainer.mouseup = e => {
 
-            rectangleContainer.removeChildren();
-            edgeContainer.visible = true;
-            renderer.render(graphContainer);
+            rectangleContainer.removeChildren()
+            edgeContainer.visible = true
+            renderer.render(graphContainer)
             if (isSelecting) {
-                onNodeNewSelection(curSelNodesIdx);
+                onNodeNewSelection(curSelNodesIdx)
             }
-            isDragging = false;
-            isSelecting = false;
-        };
+            isDragging = false
+            isSelecting = false
+        }
     }
 
     draw(visControl) {
@@ -260,10 +251,10 @@ class PixiGraph {
         edgeContainer.removeChildren()
 
         let edgeGraphics = PixiGraph.getEdgeGraphics(edges)
-        edgeContainer.addChild(edgeGraphics);
+        edgeContainer.addChild(edgeGraphics)
         
         nodes.map((d, i) => {
-            let sprite = PixiGraph.getCircleSprite()
+            let sprite = this.getCircleSprite()
             sprite.x = d.x
             sprite.y = d.y
             sprite.interactive = true
@@ -288,7 +279,7 @@ class PixiGraph {
             }
             /*
             sprite.mouseover = function (e) {
-                console.log("Hovering");
+                console.log("Hovering")
             }*/
             let col = null
 
@@ -302,13 +293,10 @@ class PixiGraph {
             else
                 col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16)
             
-            sprite.tint = col;
-            sprite.cachedTint = col;
-            sprite.anchor = new PIXI.Point(0.5, 0.5);
+            sprite.tint = col
+            sprite.cachedTint = col
+            sprite.anchor = new PIXI.Point(0.5, 0.5)
 
-            let rimSprite = PixiGraph.getRimForSprite(sprite)
-
-            nodeContainer.addChild(rimSprite)
             nodeContainer.addChild(sprite)
         })
         

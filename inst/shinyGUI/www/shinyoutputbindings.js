@@ -15,11 +15,11 @@ function display_edge(option_val, edge_type)
 function parse_trans_string (a)
 {
     //This requires the different arguments (transl, scale etc.) to be space-delimited
-    var b = {};
+    let b = {};
     console.log(a);
-    for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g))
+    for (let i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g))
     {
-        var c = a[i].match(/[\w\.\-]+/g);
+        let c = a[i].match(/[\w\.\-]+/g);
         b[c.shift()] = c;
     }
     return b;
@@ -27,9 +27,9 @@ function parse_trans_string (a)
 
 
 
-var pixiGraph = new PixiGraph(1200, 800, null);
+let pixiGraph = new PixiGraph(1200, 800, null);
 
-var visControlOutputBinding = new Shiny.OutputBinding();
+let visControlOutputBinding = new Shiny.OutputBinding();
 
 
 $.extend(visControlOutputBinding, {
@@ -48,7 +48,7 @@ $.extend(visControlOutputBinding, {
 Shiny.outputBindings.register(visControlOutputBinding, 'viscontrolbinding');
 
 
-var networkOutputBinding = new Shiny.OutputBinding();
+let networkOutputBinding = new Shiny.OutputBinding();
 
 $.extend(networkOutputBinding, {
 
@@ -62,7 +62,7 @@ $.extend(networkOutputBinding, {
             if(!el.hasChildNodes())
                 pixiGraph.addToDOM(el, () => {}, () => {})
             
-            var data = {
+            let data = {
                 nodes: JSON.parse(Rdata.nodes),
                 edges: JSON.parse(Rdata.edges)
             }
@@ -71,7 +71,7 @@ $.extend(networkOutputBinding, {
             
             function rescale()
             {
-                var transString = "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")";
+                let transString = "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")";
                 vis.attr("transform", transString);
                 //Shiny.onInputChange("graphui_cur_transform", transString);
             }
@@ -86,7 +86,7 @@ Shiny.addCustomMessageHandler("color_nodes",
     {
         //This is necessary to restore the data that is overwritten by
         //the color command
-        var old_data = d3.selectAll(".node").data();
+        let old_data = d3.selectAll(".node").data();
         d3.selectAll(".node")
             .data(color)
             .style("fill", function(d) {return d; });
@@ -112,7 +112,7 @@ Shiny.addCustomMessageHandler("reset_graph_position",
 Shiny.addCustomMessageHandler("toggle_label",
     function(value)
     {
-        var target = value.target == "cluster" ? ".label-cluster" : ".label-landmark";
+        let target = value.target == "cluster" ? ".label-cluster" : ".label-landmark";
         d3.selectAll(target).style("display", value.display);
     }
 );
@@ -136,7 +136,7 @@ Shiny.addCustomMessageHandler("toggle_display_edges",
 Shiny.addCustomMessageHandler("get_selected_nodes",
     function(value)
     {
-        var res = d3.selectAll(".selected").data().map(function(d) {return(d.name)});
+        let res = d3.selectAll(".selected").data().map(function(d) {return(d.name)});
         Shiny.onInputChange("graphui_selected_nodes", res);
     }
 );
