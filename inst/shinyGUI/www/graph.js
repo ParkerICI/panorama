@@ -38,14 +38,12 @@ class PixiGraph {
         this.rootContainer = new PIXI.Container()
         
         this.graphContainer = new PIXI.Container()
-        this.nodeRimContainer = new PIXI.Container()
         this.nodeContainer = new PIXI.Container()
         this.edgeContainer = new PIXI.Container()
         this.graphContainer.interactive = true
         this.nodeContainer.interactive = true
         
         this.graphContainer.addChild(this.edgeContainer)
-        this.graphContainer.addChild(this.nodeRimContainer)
         this.graphContainer.addChild(this.nodeContainer)
         this.rootContainer.addChild(this.graphContainer)
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
@@ -67,9 +65,38 @@ class PixiGraph {
         return ret
     };
     
+    getCircleSprite() {
+        let texture = this.getCircleTexture()
+        let sprite = new PIXI.Sprite(texture)
+        return(sprite)
+    }
     
+    getRimForSprite(sprite) {
+
+        let rimSprite = this.getCircleSprite()
+        rimSprite.anchor = new PIXI.Point(0.5, 0.5);
+        rimSprite.tint = 0x000000
+        rimSprite.x = sprite.x
+        rimSprite.y = sprite.y
+        rimSprite.scale.x = sprite.scale.x + 0.01
+        rimSprite.scale.y = sprite.scale.y + 0.01
+        return(rimSprite)
+    }
     
-    
+    getEdgeGraphics(edges) {
+        let graphics = new PIXI.Graphics()
+        graphics.lineStyle(1, 0xE6E6E6, 1)
+
+        edges.forEach(d => {
+            graphics.moveTo(d.x1, d.y1)
+            graphics.lineTo(d.x2, d.y2)
+            graphics.endFill();
+        
+        })
+
+        return(graphics)
+    }
+
     getNodeSizeScale(nodes, visControl) {
         var ret = null;
 
@@ -257,26 +284,14 @@ class PixiGraph {
         var nodeFillScale = this.getNodeFillScale(nodes, visControl)
         var nodeSizeScale = this.getNodeSizeScale(nodes, visControl)
         
-        var circleSprite = this.getCircleTexture()
-        
         nodeContainer.removeChildren()
         edgeContainer.removeChildren()
- 
-        var graphics = new PIXI.Graphics()
 
-        graphics.lineStyle(1, 0xE6E6E6, 1)
-
-        edges.map(d => {
-            graphics.moveTo(d.x1, d.y1)
-            graphics.lineTo(d.x2, d.y2)
-            graphics.endFill();
-        
-        })
-
-        edgeContainer.addChild(graphics);
+        let edgeGraphics = this.getEdgeGraphics(edges)
+        edgeContainer.addChild(edgeGraphics);
         
         nodes.map((d, i) => {
-            var sprite = new PIXI.Sprite(circleSprite)
+            var sprite = this.getCircleSprite()
             sprite.x = d.x
             sprite.y = d.y
             sprite.interactive = true
@@ -319,16 +334,10 @@ class PixiGraph {
             sprite.cachedTint = col;
             sprite.anchor = new PIXI.Point(0.5, 0.5);
 
-            nodeContainer.addChild(sprite)
+            var rimSprite = this.getRimForSprite(sprite)
 
-            var rimSprite = new PIXI.Sprite(circleSprite)
-            rimSprite.anchor = new PIXI.Point(0.5, 0.5);
-            rimSprite.tint = 0x000000
-            rimSprite.x = sprite.x
-            rimSprite.y = sprite.y
-            rimSprite.scale.x = sprite.scale.x + 0.01
-            rimSprite.scale.y = sprite.scale.y + 0.01
-            nodeRimContainer.addChild(rimSprite)
+            nodeContainer.addChild(rimSprite)
+            nodeContainer.addChild(sprite)
         })
         
         
