@@ -200,9 +200,9 @@ class PixiGraph {
                 rectGraphics.lineStyle(2, 0xFF0000)
                 rectGraphics.drawRect(
                     mouseDownX,
-					    mouseDownY,
-					    rectWidth,
-					    rectHeight 
+					mouseDownY,
+					rectWidth,
+					rectHeight 
                 )
                 rectangleContainer.addChild(rectGraphics)
                 let rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight)

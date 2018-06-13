@@ -27,6 +27,50 @@ function parse_trans_string (a)
 
 
 
+class NetworkOutputBinding extends Shiny.OutputBinding{
+
+    constructor() {
+        super()
+        this.selectedNodes = new Set()
+    }
+
+    find(scope) {
+        return $(scope).find('.shiny-network-output');
+    }
+
+    onNodeNewSelection(sel) {
+        this.selectedNodes.clear()
+        this.selectedNodes.add(sel)
+        Shiny.onInputChange("graphui_selected_nodes", Array.from(this.selectedNodes))
+    }
+
+
+    renderValue(el, Rdata) {
+        if(Rdata == null) return;
+
+
+        if(!el.hasChildNodes())
+            pixiGraph.addToDOM(el, (sel) => this.onNodeNewSelection(sel), () => {})
+        
+        let data = {
+            nodes: JSON.parse(Rdata.nodes),
+            edges: JSON.parse(Rdata.edges)
+        }
+
+        pixiGraph.data = data
+        
+        function rescale()
+        {
+            let transString = "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")";
+            vis.attr("transform", transString);
+            //Shiny.onInputChange("graphui_cur_transform", transString);
+        }
+    }
+
+}
+
+
+
 let pixiGraph = new PixiGraph(1200, 800, null);
 
 let visControlOutputBinding = new Shiny.OutputBinding();
@@ -48,52 +92,12 @@ $.extend(visControlOutputBinding, {
 Shiny.outputBindings.register(visControlOutputBinding, 'viscontrolbinding');
 
 
-let networkOutputBinding = new Shiny.OutputBinding();
 
-$.extend(networkOutputBinding, {
+let networkOutputBinding = new NetworkOutputBinding 
 
-         find: scope => {
-            return $(scope).find('.shiny-network-output');
-         },
-
-         renderValue: (el, Rdata) => {
-            if(Rdata == null) return;
-
-            if(!el.hasChildNodes())
-                pixiGraph.addToDOM(el, () => {}, () => {})
-            
-            let data = {
-                nodes: JSON.parse(Rdata.nodes),
-                edges: JSON.parse(Rdata.edges)
-            }
-
-            pixiGraph.data = data
-            
-            function rescale()
-            {
-                let transString = "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")";
-                vis.attr("transform", transString);
-                //Shiny.onInputChange("graphui_cur_transform", transString);
-            }
-
-                    
-         }
-    });
 Shiny.outputBindings.register(networkOutputBinding, 'networkbinding');
 
-Shiny.addCustomMessageHandler("color_nodes",
-    function(color)
-    {
-        //This is necessary to restore the data that is overwritten by
-        //the color command
-        let old_data = d3.selectAll(".node").data();
-        d3.selectAll(".node")
-            .data(color)
-            .style("fill", function(d) {return d; });
-        d3.selectAll(".node").data(old_data);
 
-    }
-);
 
 Shiny.addCustomMessageHandler("reset_colors",
     function(value)
