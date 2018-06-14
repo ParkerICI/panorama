@@ -55,7 +55,8 @@ add_missing_columns <- function(m, col.names, fill.data) {
 
 
 
-plot_scaffold_clusters <- function(clusters, G, graphml.fname, working.dir, col.names, pool.cluster.data, plot.type) {
+plot_scaffold_clusters <- function(G, clusters, graphml.fname, working.dir, col.names, pool.cluster.data, plot.type) {
+    clusters <- V(G)$Label[clusters]
     base.name <- gsub(".graphml$", "", graphml.fname)
     
     clusters.data <- load_rds_data(clusters, file.path(working.dir, "clusters_data", base.name))
@@ -64,7 +65,7 @@ plot_scaffold_clusters <- function(clusters, G, graphml.fname, working.dir, col.
     # Select only the landmark nodes that are connected to these clusters
     land <- V(G)[nei(V(G)$Label %in% clusters)]$Label
     land <- V(G)[(V(G)$Label %in% land) & V(G)$type == "landmark"]$Label
-    landmarks.data <- load_rds_data(land, "landmarks_data")
+    landmarks.data <- load_rds_data(land, file.path(working.dir, "landmarks_data"))
     
     
     #This only works if the col.names are actually present in the clustered.data

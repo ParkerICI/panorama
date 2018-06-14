@@ -207,9 +207,15 @@ output$graphui_plot = renderPlot({
     {
         isolate({
             col.names <- input$graphui_markers_to_plot
-            if((length(col.names) >= 1) && (length(input$graphui_selected_nodes) >= 1))
-                p <- scaffold2:::plot_cluster(scaffold_data(), input$graphui_selected_nodes, input$graphui_selected_graph, 
-                                            input$graphui_markers_to_plot, input$graphui_pool_cluster_data, input$graphui_plot_type)
+            if((length(col.names) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
+                G <- get_graph()
+                #TODO: remove landmarks from here
+                
+                p <- scaffold2:::plot_scaffold_clusters(G, input$graphui_selected_nodes, input$graphui_selected_graph, working.directory,   
+                                              input$graphui_markers_to_plot, input$graphui_pool_cluster_data, input$graphui_plot_type)
+                
+            }
+                
         })
     }
     print(p)

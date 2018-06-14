@@ -275,7 +275,7 @@ class PixiGraph {
             sprite.mousedown = e => {
                 if (e.data.originalEvent.shiftKey) {
                     e.currentTarget.tint = 0xFF0000
-                    onNodeAddToSelection(i)
+                    onNodeAddToSelection([i])
                 }
             }
             /*
