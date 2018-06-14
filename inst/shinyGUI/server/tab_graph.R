@@ -111,13 +111,20 @@ fluidPage(
 )
 })}
 
-
-
-get_main_graph <- reactive({
+get_graph <- reactive({
     if(!is.null(input$graphui_selected_graph) && input$graphui_selected_graph != "") {
-        
         G <- igraph::read.graph(file.path(working.directory, input$graphui_selected_graph), format = "graphml")
-        
+        return(G)
+    } else {
+        return(NULL)
+    }
+    
+})
+
+
+observe({
+    G <- get_graph()
+    if(!is.null(G)) {
         attrs <- scaffold2:::get_numeric_vertex_attributes(G)
         node.size.attr <- scaffold2:::combine_marker_sample_name("popsize", input$graphui_active_sample)
         
@@ -135,25 +142,24 @@ get_main_graph <- reactive({
             updateSelectInput(session, "graphui_stats_relative_to", choices = c("Absolute", sample.names),
                                 selected = input$graphui_stats_relative_to)
         })
-        return(scaffold2:::get_graph(G))
     }
-    else
-        return(NULL)
-})
-
-read_color_scale_info <- reactive({
-    return(list(sel.marker = input$graphui_marker, color.scale.lim = input$graphui_color_scale_lim,
-                color.scale.mid = input$graphui_color_scale_mid))
 })
 
 
 output$graphui_mainnet <- reactive({
-    ret <- get_main_graph()
-    if(!is.null(ret)) {
+    G <- get_graph()
+    ret <- NULL
+    
+    if(!is.null(G)) {
+        ret <- scaffold2:::graph_to_json(G)
         ret$trans_to_apply <- isolate({input$graphui_cur_transform})
     }
     return(ret)
 })
+
+
+
+
 
 
 observe({

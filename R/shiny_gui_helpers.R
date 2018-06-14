@@ -93,7 +93,7 @@ export_clusters <- function(working.dir, sel.graph, sel.nodes)
 
 
 
-get_graph <- function(G) {
+graph_to_json <- function(G) {
     edges <- data.frame(igraph::get.edgelist(G, names = F) - 1)
     colnames(edges) <- c("source", "target")
     svg.width <- 1200
