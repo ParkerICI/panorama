@@ -5,6 +5,7 @@ class PixiGraph {
     constructor(width, height, data) {
         this.data = data
         this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true })
+        //this.renderer.roundPixels = true
         this.renderer.backgroundColor = 0xFFFFFF
 
         this.rootContainer = new PIXI.Container()
@@ -12,11 +13,13 @@ class PixiGraph {
         this.graphContainer = new PIXI.Container()
         this.nodeContainer = new PIXI.Container()
         this.edgeContainer = new PIXI.Container()
+        this.textContainer = new PIXI.Container()
         this.graphContainer.interactive = true
         this.nodeContainer.interactive = true
         
         this.graphContainer.addChild(this.edgeContainer)
         this.graphContainer.addChild(this.nodeContainer)
+        this.graphContainer.addChild(this.textContainer)
         this.rootContainer.addChild(this.graphContainer)
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
 
@@ -43,6 +46,10 @@ class PixiGraph {
         let sprite = new PIXI.Sprite(this.circleTexture)
         return(sprite)
     }
+    
+
+    // TODO: Modify this to generate a texture in stead of 
+    // PIXI.Graphics objects
     
     static getEdgeGraphics(edges) {
         let graphics = new PIXI.Graphics()
@@ -285,8 +292,14 @@ class PixiGraph {
             let col = null
 
             if(visControl.nodeColorAttr == "Default") {
-                if(d.type && d.type == "landmark")
+                if(d.type && d.type == "landmark") {
                     col = 0xFF7580
+                    let label = new PIXI.Text(d.Label, {fontFamily : 'Arial', fontSize: 24, fill : 0x210E0F, align : 'left', strokeThickness:1})
+                    label.position = new PIXI.Point(d.x, d.y)
+                    label.resolution = 2
+                    this.textContainer.addChild(label)
+
+                }
                 else
                     col = 0x4F93DE
 

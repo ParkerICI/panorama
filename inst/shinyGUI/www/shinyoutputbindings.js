@@ -20,9 +20,6 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
         
         //Switch to 1-based indexing for R
         let selToR = Array.from(this.selectedNodes).map(i => i + 1)
-        console.log(sel)
-        console.log(selToR)
-
         Shiny.onInputChange("graphui_selected_nodes", selToR)
     }
 

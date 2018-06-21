@@ -59,6 +59,7 @@ plot_scaffold_clusters <- function(G, clusters, graphml.fname, working.dir, col.
     clusters <- V(G)$Label[clusters]
     base.name <- gsub(".graphml$", "", graphml.fname)
     
+    
     clusters.data <- load_rds_data(clusters, file.path(working.dir, "clusters_data", base.name))
     clusters.data <- clusters.data[, c(col.names, "cellType")]
     
