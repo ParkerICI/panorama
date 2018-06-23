@@ -109,31 +109,29 @@ class PixiGraph {
 
         this.onNodeAddToSelection = onNodeAddToSelection
         
-        let zoom = (function (rootContainer, graphContainer, 
-            edgeContainer, renderer) {
-            return function (x, y, isZoomIn) {
-                let beforeTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer)
+        let zoom = (x, y, isZoomIn) => {
+                let beforeTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
                 
                 let direction = isZoomIn ? 1 : -1
                 let factor = (1 + direction * 0.1)
-                edgeContainer.visible = false
-                graphContainer.scale.x *= factor
-                graphContainer.scale.y *= factor
-                graphContainer.updateTransform()
+                this.edgeContainer.visible = false
+                this.graphContainer.scale.x *= factor
+                this.graphContainer.scale.y *= factor
+                this.graphContainer.updateTransform()
                 
                 
-                setTimeout(function () { edgeContainer.visible = true; renderer.render(rootContainer) }, 200)
+                setTimeout(() => { this.edgeContainer.visible = true; this.renderer.render(this.rootContainer) }, 200)
                 
                 
-                graphContainer.updateTransform()
-                let afterTransform = renderer.plugins.interaction.eventData.data.getLocalPosition(graphContainer)
+                this.graphContainer.updateTransform()
+                let afterTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
                 
-                graphContainer.position.x += (afterTransform.x - beforeTransform.x) * graphContainer.scale.x
-                graphContainer.position.y += (afterTransform.y - beforeTransform.y) * graphContainer.scale.y
-                graphContainer.updateTransform()
-                renderer.render(rootContainer)
-            }
-        })(this.rootContainer, this.graphContainer, this.edgeContainer, this.renderer)
+                this.graphContainer.position.x += (afterTransform.x - beforeTransform.x) * this.graphContainer.scale.x
+                this.graphContainer.position.y += (afterTransform.y - beforeTransform.y) * this.graphContainer.scale.y
+                this.graphContainer.updateTransform()
+                this.renderer.render(this.rootContainer)
+        }
+        
         
         
         
