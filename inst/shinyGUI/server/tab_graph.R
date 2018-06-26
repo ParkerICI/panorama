@@ -17,7 +17,7 @@ col <- function(width, ...) {
 
 render_graph_ui <- function(working.directory, ...){renderUI({
 fluidPage(
-    tags$head(tags$script(src = "openwindow.js")),
+    tags$head(tags$script(src = "mainwindow.js")),
     fluidRow(
         column(9,
             visControl("graphui_viscontrol"),

@@ -69,9 +69,6 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
 
 
 plot_scaffold_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type) {
-  
-    browser()
-    
     cl.labels <- V(G)$Label[clusters]
     
     if(!is.null(V(G)$sample)) {
