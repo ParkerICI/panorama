@@ -68,20 +68,19 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
 }
 
 
-plot_scaffold_clusters <- function(G, clusters, graphml.fname, working.dir, col.names, pool.cluster.data, plot.type) {
+plot_scaffold_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type) {
   
+    browser()
     
-    samples <- NULL
-    if(!is.null(V(G)$sample))
+    cl.labels <- V(G)$Label[clusters]
+    
+    if(!is.null(V(G)$sample)) {
         samples <- V(G)$sample[clusters]
-    clusters <- V(G)$Label[clusters]
-
+        clusters.data <- load_clusters_data(cl.labels, samples, file.path(working.dir, "clusters_data"))
+    } else {
+        clusters.data <- load_rds_data(cl.labels, file.path(working.dir, "clusters_data", "pooled"))
+    }
     
-    base.name <- gsub(".graphml$", "", graphml.fname)
-    
-   
-    
-    clusters.data <- load_clusters_data(clusters, samples, file.path(working.dir, "clusters_data"))
     clusters.data <- clusters.data[, c(col.names, "cellType")]
     
     temp <- clusters.data
@@ -89,7 +88,7 @@ plot_scaffold_clusters <- function(G, clusters, graphml.fname, working.dir, col.
     if(any(V(G)$type == "landmark")) {
     
         # Select only the landmark nodes that are connected to these clusters
-        land <- V(G)[nei(V(G)$Label %in% clusters)]$Label
+        land <- V(G)[nei(V(G)$Label %in% cl.labels)]$Label
         land <- V(G)[(V(G)$Label %in% land) & V(G)$type == "landmark"]$Label
         landmarks.data <- load_rds_data(land, file.path(working.dir, "landmarks_data"))
         
