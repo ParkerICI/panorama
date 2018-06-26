@@ -17,13 +17,11 @@ col <- function(width, ...) {
 
 render_graph_ui <- function(working.directory, ...){renderUI({
 fluidPage(
+    tags$head(tags$script(src = "openwindow.js")),
     fluidRow(
-        column(6,
+        column(9,
             visControl("graphui_viscontrol"),
             reactiveNetwork(outputId = "graphui_mainnet")
-        ),
-        column(3,
-               dataTableOutput("graphui_table")
         ),
         column(3,
             selectizeInput("graphui_selected_graph", "Choose a graph:", choices = c("", list.files(path = working.directory, pattern = "*.graphml$")), width = "100%"),
@@ -203,15 +201,14 @@ output$graphui_viscontrol <- reactive({
 
 output$graphui_plot = renderPlot({
     p <- NULL
-    if(!is.null(input$graphui_plot_clusters) && input$graphui_plot_clusters != 0)
-    {
+    if(!is.null(input$graphui_plot_clusters) && input$graphui_plot_clusters != 0) {
         isolate({
             col.names <- input$graphui_markers_to_plot
             if((length(col.names) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
                 G <- get_graph()
                 #TODO: remove landmarks from here
                 
-                p <- scaffold2:::plot_scaffold_clusters(G, input$graphui_selected_nodes, input$graphui_selected_graph, working.directory,   
+                p <- scaffold2:::plot_scaffold_clusters(G, input$graphui_selected_nodes, working.directory,   
                                               input$graphui_markers_to_plot, input$graphui_pool_cluster_data, input$graphui_plot_type)
                 
             }

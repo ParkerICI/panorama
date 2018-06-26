@@ -8,7 +8,9 @@ ui <- navbarPage("SCAFFoLD",
         singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'rect_select.css'))),
         singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'graph.css')))
     ),
-    tabPanel("Map exploration", uiOutput("graphUI"))
+    tabPanel("Map exploration", 
+             uiOutput("graphUI"),
+             uiOutput("plotWindow"))
     #tabPanel("Run SCAFFoLD Analysis", uiOutput("analysisUI")),
     #tabPanel("Run clustering", uiOutput("clusteringUI")),
     #tabPanel("Map dataset", uiOutput("mappingUI")),
@@ -20,27 +22,29 @@ ui <- navbarPage("SCAFFoLD",
 
 
 server <- function(input, output, session) {
-    options(shiny.error=traceback) 
-    if(exists(".ScaffoldWorkingDir"))
-        working.directory <- .ScaffoldWorkingDir
-    else
-        working.directory <- dirname(file.choose())
-
+    options(shiny.error=traceback)
     app.dir <- file.path(system.file(package = "scaffold2"), "shinyGUI")
+    
+    observe({
+        
+        query <- parseQueryString(session$clientData$url_search)
+        
+        if (is.null(query[['plot']])) {
+            if(exists(".ScaffoldWorkingDir"))
+                working.directory <- .ScaffoldWorkingDir
+            else
+                working.directory <- dirname(file.choose())
 
-    #source(file.path(app.dir, "server", "tab_editing.R"), local = T)$value
-    #source(file.path(app.dir, "server", "tab_mapping.R"), local = T)$value
-    #source(file.path(app.dir, "server", "tab_clustering.R"), local = T)$value
-    #source(file.path(app.dir, "server", "tab_analysis.R"), local = T)$value
-    source(file.path(app.dir, "server", "tab_graph.R"), local = T)$value
-    #source(file.path(app.dir, "server", "tab_citrus.R"), local = T)$value
+            source(file.path(app.dir, "server", "tab_graph.R"), local = T)$value
 
-    output$graphUI <- render_graph_ui(working.directory, input, output, session)
-    #output$analysisUI <- render_analysis_ui(working.directory, input, output, session)
-    #output$clusteringUI <- render_clustering_ui(working.directory, input, output, session)
-    #output$mappingUI <- render_mapping_ui(working.directory, input, output, session)
-    #output$editingUI <- render_editing_ui(working.directory, input, output, session)
-    #output$citrusUI <- render_citrus_ui(working.directory, input, output, session)
+            output$graphUI <- render_graph_ui(working.directory, input, output, session)
+        } else {
+            
+            source(file.path(app.dir, "server", "plot_window.R"), local = T)$value
+            
+            output$plotWindow <- render_plot_window()
+        }
+    })
 }
 
 shinyApp(ui = ui, server = server)
