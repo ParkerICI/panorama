@@ -54,32 +54,59 @@ add_missing_columns <- function(m, col.names, fill.data) {
 }
 
 
+load_clusters_data <- function(clusters, samples, dir.prefix) {
+    df <- data.frame(clusters, samples, stringsAsFactors = FALSE)
+    
+    ret <- plyr::dlply(df, ~samples, function(x) {
+        return(load_rds_data(x$clusters, file.path(dir.prefix, x$samples[1])))
+        
+    })
+    
+    return(do.call(rbind, ret))
+    
+    
+}
+
 
 plot_scaffold_clusters <- function(G, clusters, graphml.fname, working.dir, col.names, pool.cluster.data, plot.type) {
+  
+    
+    samples <- NULL
+    if(!is.null(V(G)$sample))
+        samples <- V(G)$sample[clusters]
     clusters <- V(G)$Label[clusters]
+
+    
     base.name <- gsub(".graphml$", "", graphml.fname)
     
+   
     
-    clusters.data <- load_rds_data(clusters, file.path(working.dir, "clusters_data", base.name))
+    clusters.data <- load_clusters_data(clusters, samples, file.path(working.dir, "clusters_data"))
     clusters.data <- clusters.data[, c(col.names, "cellType")]
     
-    # Select only the landmark nodes that are connected to these clusters
-    land <- V(G)[nei(V(G)$Label %in% clusters)]$Label
-    land <- V(G)[(V(G)$Label %in% land) & V(G)$type == "landmark"]$Label
-    landmarks.data <- load_rds_data(land, file.path(working.dir, "landmarks_data"))
+    temp <- clusters.data
     
+    if(any(V(G)$type == "landmark")) {
     
-    #This only works if the col.names are actually present in the clustered.data
-    #TODO: figure out a consistent way to deal with panel mismatches
+        # Select only the landmark nodes that are connected to these clusters
+        land <- V(G)[nei(V(G)$Label %in% clusters)]$Label
+        land <- V(G)[(V(G)$Label %in% land) & V(G)$type == "landmark"]$Label
+        landmarks.data <- load_rds_data(land, file.path(working.dir, "landmarks_data"))
+        
+        
+        #This only works if the col.names are actually present in the clustered.data
+        #TODO: figure out a consistent way to deal with panel mismatches
+        
+        common.names <- col.names[(col.names %in% names(clusters.data)) & (col.names %in% names(landmarks.data))]
+        landmarks.data <- landmarks.data[, c(common.names, "cellType")]
+        landmarks.data <- add_missing_columns(landmarks.data, col.names, fill.data = NA)
+        temp <- rbind(clusters.data, landmarks.data)
+    }
     
-    common.names <- col.names[(col.names %in% names(clusters.data)) & (col.names %in% names(landmarks.data))]
-    landmarks.data <- landmarks.data[, c(common.names, "cellType")]
-    landmarks.data <- add_missing_columns(landmarks.data, col.names, fill.data = NA)
+    print("FIXME: Need to split data by samples")
     
     if(pool.cluster.data)
         clusters.data$cellType <- "Clusters"
-    
-    temp <- rbind(clusters.data, landmarks.data)
     
     p <- NULL
     
@@ -89,6 +116,8 @@ plot_scaffold_clusters <- function(G, clusters, graphml.fname, working.dir, col.
     else {
         temp <- reshape::melt(temp, id.vars = "cellType")
         temp$variable <- as.factor(temp$variable)
+        temp$cellType <- as.factor(temp$cellType)
+        
         if(plot.type == "Density")
             p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = temp) 
                     + ggplot2::geom_density() 

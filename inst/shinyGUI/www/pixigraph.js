@@ -15,7 +15,7 @@ class PixiGraph {
         this.edgeContainer = new PIXI.Container()
         this.textContainer = new PIXI.Container()
         this.graphContainer.interactive = true
-        this.nodeContainer.interactive = true
+        //this.nodeContainer.interactive = true
         
         this.graphContainer.addChild(this.edgeContainer)
         this.graphContainer.addChild(this.nodeContainer)
@@ -104,6 +104,7 @@ class PixiGraph {
     
     addToDOM(domEl, onNodeNewSelection, onNodeAddToSelection) {
         domEl.appendChild(this.renderer.view)
+        this.addDragNDrop()
 
         this.onNodeNewSelection = onNodeNewSelection
 
@@ -141,7 +142,7 @@ class PixiGraph {
             zoom(e.clientX, e.clientY, e.deltaY < 0)
         })
 
-        this.addDragNDrop()
+        
     }
     
     addDragNDrop() {
@@ -229,7 +230,7 @@ class PixiGraph {
             edgeContainer.visible = true
             renderer.render(graphContainer)
             if (isSelecting) {
-                onNodeNewSelection(curSelNodesIdx)
+                this.onNodeNewSelection(curSelNodesIdx)
             }
             isDragging = false
             isSelecting = false

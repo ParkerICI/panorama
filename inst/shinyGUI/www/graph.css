@@ -10,3 +10,7 @@
     stroke: red;
     stroke-width: 1px;
 }
+
+canvas {
+    border-style: solid;
+}

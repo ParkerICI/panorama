@@ -109,7 +109,7 @@ graph_to_json <- function(G) {
     num.landmarks <- sum(V(G)$type == "landmark")
     
     trans <- NULL
-    if("type" %in% igraph::list.vertex.attributes(G))
+    if(!is.null(V(G)$type) && any(V(G)$type == "landmark"))
         trans <- get_graph_centering_transform(x[V(G)$type == "landmark"], y[V(G)$type == "landmark"], svg.width, svg.height)
     else
         trans <- get_graph_centering_transform(x, y, svg.width, svg.height)
