@@ -68,7 +68,7 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
 }
 
 
-plot_scaffold_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type) {
+plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type) {
     cl.labels <- V(G)$Label[clusters]
     
     if(!is.null(V(G)$sample)) {
@@ -109,20 +109,28 @@ plot_scaffold_clusters <- function(G, clusters, working.dir, col.names, pool.clu
     if(plot.type == "Scatterplot")
         p <- density_scatterplot(temp, x_name = col.names[1], y_name = col.names[2], grouping = "cellType")
     
-    else {
-        temp <- reshape::melt(temp, id.vars = "cellType")
-        temp$variable <- as.factor(temp$variable)
-        temp$cellType <- as.factor(temp$cellType)
-        
-        if(plot.type == "Density")
-            p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = temp) 
-                    + ggplot2::geom_density() 
-                    + ggplot2::facet_wrap(~variable, scales = "free"))
-        
-        else if(plot.type == "Boxplot")
-            p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = temp) 
-                    + ggplot2::geom_boxplot())
-    }
+    else 
+        p <- expression_plot(temp, plot.type)
+
+    return(p)
+}
+
+
+expression_plot <- function(tab, plot.type) {
+    tab <- reshape::melt(tab, id.vars = "cellType")
+    tab$variable <- as.factor(tab$variable)
+    tab$cellType <- as.factor(tab$cellType)
+    p <- NULL
+    
+    if(plot.type == "Density")
+        p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = tab) 
+              + ggplot2::geom_density() 
+              + ggplot2::facet_wrap(~variable, scales = "free"))
+    
+    else if(plot.type == "Boxplot")
+        p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
+              + ggplot2::geom_boxplot())
+    
     return(p)
 }
 
