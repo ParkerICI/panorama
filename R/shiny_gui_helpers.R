@@ -17,9 +17,16 @@ get_vertex_size <- function(G, figure.width, node.size.attr, min.node.size, max.
 
 
 get_sample_names <- function(G) {
-    s <- igraph::list.vertex.attributes(G)
-    s <- grep("@", s, value = T)
-    ret <- sapply(strsplit(s, "@"), function (x) {x[[2]]})
+    ret <- NULL
+    
+    if(!is.null(V(G)$sample))
+       ret <- V(G)$sample
+    else {
+        s <- igraph::list.vertex.attributes(G)
+        s <- grep("@", s, value = T)
+        ret <- sapply(strsplit(s, "@"), function (x) {x[[2]]})
+    }
+    
     return(unique(ret))
 }
 
@@ -210,7 +217,7 @@ get_numeric_vertex_attributes <- function(G)
     num <- sapply(d, function(x) {is.numeric(x) && !any(is.na(x))})
     v <- igraph::list.vertex.attributes(G)[num]
     v <- v[grep("@", v, invert = T)]
-    exclude <- c("x", "y", "cellType", "type", "groups", "r", "g", "b", "size", "DNA1", "DNA2", "BC1", "BC2", "BC3", "BC4", "BC5", "BC6", "Time", "Cell_length", "Cisplatin", "beadDist", "highest_scoring_edge")
+    exclude <- c("x", "y", "popsize", "cellType", "type", "groups", "r", "g", "b", "size", "DNA1", "DNA2", "BC1", "BC2", "BC3", "BC4", "BC5", "BC6", "Time", "Cell_length", "Cisplatin", "beadDist", "highest_scoring_edge")
     return(v[!(v %in% exclude)])
 }
 

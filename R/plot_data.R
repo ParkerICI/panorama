@@ -58,8 +58,9 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
     df <- data.frame(clusters, samples, stringsAsFactors = FALSE)
     
     ret <- plyr::dlply(df, ~samples, function(x) {
-        return(load_rds_data(x$clusters, file.path(dir.prefix, x$samples[1])))
-        
+        ret <- load_rds_data(x$clusters, file.path(dir.prefix, x$samples[1]))
+        ret$sample <- x$samples[1]
+        return(ret)
     })
     
     return(do.call(rbind, ret))
@@ -85,9 +86,12 @@ plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data
         clusters.data <- load_clusters_data(cl.labels, samples, file.path(working.dir, "clusters_data"))
     }
     
-    clusters.data <- clusters.data[, c(col.names, "cellType")]
     
-    temp <- clusters.data
+    temp <- clusters.data[, c(col.names, "cellType")]
+    if(!is.null(clusters.data$sample))
+        temp$sample <- as.factor(clusters.data$sample)
+    
+    landmarks.data <- NULL
     
     if(any(V(G)$type == "landmark")) {
     
@@ -103,13 +107,20 @@ plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data
         common.names <- col.names[(col.names %in% names(clusters.data)) & (col.names %in% names(landmarks.data))]
         landmarks.data <- landmarks.data[, c(common.names, "cellType")]
         landmarks.data <- add_missing_columns(landmarks.data, col.names, fill.data = NA)
-        temp <- rbind(clusters.data, landmarks.data)
+        
+        if(!is.null(clusters.data$sample))
+            landmarks.data <- data.frame(landmarks.data, sample = rep(clusters.data$sample, each = nrow(landmarks.data)))
+        
+        
+        
     }
     
-    print("FIXME: Need to split data by samples")
-    
-    if(pool.cluster.data)
+    if(pool.cluster.data) {
         clusters.data$cellType <- "Clusters"
+        clusters.data$sample <- NULL
+    }
+    
+    temp <- rbind(clusters.data, landmarks.data)
     
     p <- NULL
     
@@ -124,19 +135,37 @@ plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data
 
 
 expression_plot <- function(tab, plot.type) {
-    tab <- reshape::melt(tab, id.vars = "cellType")
-    tab$variable <- as.factor(tab$variable)
-    tab$cellType <- as.factor(tab$cellType)
+    
+    # Add error message that you cannot subset density plots by sample
     p <- NULL
+
     
-    if(plot.type == "Density")
-        p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = tab) 
-              + ggplot2::geom_density() 
-              + ggplot2::facet_wrap(~variable, scales = "free"))
+    if(!is.null(tab$sample)) {
+        tab <- reshape::melt(tab, id.vars = c("cellType", "sample"))
+        tab$variable <- as.factor(tab$variable)
+        tab$cellType <- as.factor(tab$cellType)
+        
+        if(plot.type == "Boxplot") 
+            p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
+                  + ggplot2::geom_boxplot()
+                  + ggplot2::facet_wrap(~sample))
+        
+    }
+    else {
     
-    else if(plot.type == "Boxplot")
-        p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
-              + ggplot2::geom_boxplot())
+        tab <- reshape::melt(tab, id.vars = "cellType")
+        tab$variable <- as.factor(tab$variable)
+        tab$cellType <- as.factor(tab$cellType)
+        
+        if(plot.type == "Density")
+            p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = tab) 
+                  + ggplot2::geom_density() 
+                  + ggplot2::facet_wrap(~variable, scales = "free"))
+        
+        else if(plot.type == "Boxplot") 
+            p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
+                  + ggplot2::geom_boxplot())
+    }
     
     return(p)
 }

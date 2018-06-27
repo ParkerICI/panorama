@@ -19,13 +19,24 @@ render_graph_ui <- function(working.directory, ...){renderUI({
 fluidPage(
     tags$head(tags$script(src = "mainwindow.js")),
     fluidRow(
+        column(2,
+            selectizeInput("graphui_selected_graph", "Choose a graph:", choices = c("", list.files(path = working.directory, pattern = "*.graphml$")), width = "100%")
+        ),
+        column(2,
+            selectizeInput("graphui_active_sample", "Active sample", choices = c("All"), width = "100%")     
+        )
+        
+    ),
+    
+    
+    fluidRow(
         column(9,
             visControl("graphui_viscontrol"),
             reactiveNetwork(outputId = "graphui_mainnet")
         ),
         column(3,
-            selectizeInput("graphui_selected_graph", "Choose a graph:", choices = c("", list.files(path = working.directory, pattern = "*.graphml$")), width = "100%"),
-            selectizeInput("graphui_active_sample", "Active sample", choices = c("All"), width = "100%"),
+           
+            
             selectInput("graphui_node_color_attr", "Nodes color:", choices = c("Default"), width = "100%"),
             fluidRow(
                 column(6,
@@ -90,15 +101,25 @@ fluidPage(
                 )
             ),
             selectInput("graphui_display_edges", "Display edges:", choices = c("All", "Highest scoring", "Inter cluster", "To landmark"), width = "100%"), br(),
-            actionButton("graphui_reset_graph_position", "Reset graph position"), br(),
-            actionButton("graphui_toggle_landmark_labels", "Toggle landmark labels"), br(),
-            actionButton("graphui_toggle_cluster_labels", "Toggle cluster labels"), br(),
-            actionButton("graphui_export_selected_clusters", "Export selected clusters"), br(),
-            p("For the export to work, the original RData files corresponding to the clustered files in use must be located in the working directory"),
             actionButton("graphui_plot_clusters", "Plot selected clusters"), checkboxInput("graphui_pool_cluster_data", "Pool cluster data", value = FALSE), br(),
             selectInput("graphui_plot_type", "Plot type:", choices = c("Density", "Boxplot", "Scatterplot"), width = "100%"),
             selectInput("graphui_markers_to_plot", "Markers to plot in cluster view:", choices = c(""), multiple = T, width = "100%"),
+            selectizeInput("graphui_samples_to_plot", "Samples to plot", choices = c(""), multiple = T, width = "100%"),
             verbatimTextOutput("graphui_dialog1")
+        )
+    ),
+    fluidRow(
+        column(2,
+            actionButton("graphui_reset_graph_position", "Reset graph position")
+        ),
+        column(2,
+            actionButton("graphui_toggle_landmark_labels", "Toggle landmark labels")       
+        ),
+        column(2,
+            actionButton("graphui_toggle_cluster_labels", "Toggle cluster labels") 
+        ),
+        column(2,
+            actionButton("graphui_export_selected_clusters", "Export selected clusters")
         )
     ),
     fluidRow(
@@ -137,6 +158,7 @@ observe({
             sample.names <- scaffold2:::get_sample_names(G)
             updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
                                 selected = input$graphui_active_sample)
+            updateSelectizeInput(session, "graphui_samples_to_plot", choices = sample.names)
             updateSelectInput(session, "graphui_stats_relative_to", choices = c("Absolute", sample.names),
                                 selected = input$graphui_stats_relative_to)
         })
