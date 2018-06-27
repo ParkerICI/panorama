@@ -68,14 +68,21 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
 }
 
 
-plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type) {
+
+plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type, samples.to.plot = NULL) {
     cl.labels <- V(G)$Label[clusters]
+    clusters.data <- NULL
     
-    if(!is.null(V(G)$sample)) {
-        samples <- V(G)$sample[clusters]
-        clusters.data <- load_clusters_data(cl.labels, samples, file.path(working.dir, "clusters_data"))
-    } else {
+    if(is.null(V(G)$sample) && is.null(samples.to.plot)) # Plot the pooled data
         clusters.data <- load_rds_data(cl.labels, file.path(working.dir, "clusters_data", "pooled"))
+    else {
+        samples <- NULL
+        if(!is.null(V(G)$sample))
+            samples <- V(G)$sample[clusters]
+        else
+            samples <- rep(samples.to.plot, each = length(clusters))
+        
+        clusters.data <- load_clusters_data(cl.labels, samples, file.path(working.dir, "clusters_data"))
     }
     
     clusters.data <- clusters.data[, c(col.names, "cellType")]
