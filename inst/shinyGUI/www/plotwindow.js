@@ -3,15 +3,16 @@ function plot_receive(ev) {
     let msgData = ev.oldValue
 
     if(msgData) {
-        let cur_img = document.getElementById("plotWindow_plot")
-
-        if(cur_img)
-            cur_img.parentNode.removeChild(cur_img)
+        let imgDiv = document.getElementById("plotOutput")
+        
+        while(imgDiv.firstChild)
+            imgDiv.removeChild(imgDiv.firstChild)
+ 
         let img = document.createElement('img')
         img.id = "plotWindow_plot"
         img.setAttribute("src", msgData)
         
-        document.getElementById("plotWindow").appendChild(img);
+        imgDiv.appendChild(img)
     }
 }
 
