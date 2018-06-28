@@ -2,8 +2,7 @@
 
 class PixiGraph {
     
-    constructor(width, height, graphData) {
-        this.data = graphData
+    constructor(width, height) {
         this.width = width
         this.height = height
         this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true })
@@ -56,7 +55,19 @@ class PixiGraph {
             ret.y1 = yScale(ret.y1); ret.y2 = yScale(ret.y2)
             return(ret)
         })
+        
+        // TODO: Modify this to generate a texture in stead of 
+        // PIXI.Graphics objects
 
+        this.edgeGraphics = new PIXI.Graphics()
+        this.edgeGraphics.lineStyle(1, 0xE6E6E6, 1)
+
+        this.data.edges.forEach(d => {
+            this.edgeGraphics.moveTo(d.x1, d.y1)
+            this.edgeGraphics.lineTo(d.x2, d.y2)
+            this.edgeGraphics.endFill()
+        
+        })
     }
 
     static getNodeFillScale(nodes, visControl) {
@@ -80,22 +91,6 @@ class PixiGraph {
     }
     
 
-    // TODO: Modify this to generate a texture in stead of 
-    // PIXI.Graphics objects
-    // Move this in the constructor
-    static getEdgeGraphics(edges) {
-        let graphics = new PIXI.Graphics()
-        graphics.lineStyle(1, 0xE6E6E6, 1)
-
-        edges.forEach(d => {
-            graphics.moveTo(d.x1, d.y1)
-            graphics.lineTo(d.x2, d.y2)
-            graphics.endFill()
-        
-        })
-
-        return(graphics)
-    }
 
     static getNodeSizeScale(nodes, visControl) {
         let ret = null
@@ -147,7 +142,7 @@ class PixiGraph {
             
             let direction = isZoomIn ? 1 : -1
             let factor = (1 + direction * 0.1)
-            this.edgeContainer.visible = false
+            //this.edgeContainer.visible = false
             this.graphContainer.scale.x *= factor
             this.graphContainer.scale.y *= factor
             this.graphContainer.updateTransform()
@@ -212,7 +207,7 @@ class PixiGraph {
             }
             else {
                 isDragging = true
-                edgeContainer.visible = false
+                //edgeContainer.visible = false
             }
             renderer.render(graphContainer)
         }
@@ -283,22 +278,15 @@ class PixiGraph {
 
         let nodes = this.data.nodes
         let edges = this.data.edges
-        let nodeContainer = this.nodeContainer
-        let nodeRimContainer = this.nodeRimContainer
-        let edgeContainer = this.edgeContainer
-        let graphContainer = this.graphContainer
-        let onNodeAddToSelection = this.onNodeAddToSelection
-        let onNodeNewSelection = this.onNodeNewSelection
         let nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)
         let nodeSizeScale = PixiGraph.getNodeSizeScale(nodes, visControl)
         
-        nodeContainer.removeChildren()
-        edgeContainer.removeChildren()
+        this.nodeContainer.removeChildren()
+        this.edgeContainer.removeChildren()
         this.textContainer.removeChildren()
 
-        let edgeGraphics = PixiGraph.getEdgeGraphics(edges)
-        edgeContainer.addChild(edgeGraphics)
-        
+        this.edgeContainer.addChild(this.edgeGraphics)
+
         nodes.map((d, i) => {
             let sprite = this.getCircleSprite()
             sprite.x = d.x
@@ -321,7 +309,7 @@ class PixiGraph {
             sprite.mousedown = e => {
                 if (e.data.originalEvent.shiftKey) {
                     e.currentTarget.tint = 0xFF0000
-                    onNodeAddToSelection([i])
+                    this.onNodeAddToSelection([i])
                 }
             }
             /*
@@ -350,7 +338,7 @@ class PixiGraph {
             sprite.cachedTint = col
             sprite.anchor = new PIXI.Point(0.5, 0.5)
 
-            nodeContainer.addChild(sprite)
+            this.nodeContainer.addChild(sprite)
         })
         
         

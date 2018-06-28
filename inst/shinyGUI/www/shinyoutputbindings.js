@@ -3,7 +3,7 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
     constructor(width, height) {
         super()
         this.selectedNodes = new Set()
-        this.pixiGraph = new PixiGraph(width, height, null) 
+        this.pixiGraph = new PixiGraph(width, height) 
     }
 
     find(scope) {
