@@ -37,7 +37,7 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
             edges: JSON.parse(Rdata.edges)
         }
 
-        this.pixiGraph.data = data
+        this.pixiGraph.graphData = data
         
     }
 }

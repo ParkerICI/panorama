@@ -4,8 +4,6 @@ ui <- navbarPage("SCAFFoLD",
         tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.7.1/pixi.js")),
         tags$head(tags$script(src = "pixigraph.js")),
         tags$head(tags$script(src = "shinyoutputbindings.js")),
-        tags$head(tags$script(src = "rect_select.js")),
-        singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'rect_select.css'))),
         singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'graph.css')))
     ),
     tabPanel("Map exploration", 

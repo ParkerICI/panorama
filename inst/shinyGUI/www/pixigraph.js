@@ -2,8 +2,10 @@
 
 class PixiGraph {
     
-    constructor(width, height, data) {
-        this.data = data
+    constructor(width, height, graphData) {
+        this.data = graphData
+        this.width = width
+        this.height = height
         this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true })
         //this.renderer.roundPixels = true
         this.renderer.backgroundColor = 0xFFFFFF
@@ -24,8 +26,38 @@ class PixiGraph {
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
 
         this.circleTexture = PixiGraph.getCircleTexture()
+
+       
     }
 
+    set graphData(data) {
+        this.data = data
+        let xPadding = Math.round(this.width * 0.05)
+        let yPadding = Math.round(this.height * 0.05)
+
+        let xScale = d3.scale.linear()
+                        .range([0 + xPadding, this.width - xPadding])
+                        .domain(d3.extent(this.data.nodes, d => d.x))
+
+        let yScale = d3.scale.linear()
+                        .range([0 + yPadding, this.height - yPadding])
+                        .domain(d3.extent(this.data.nodes, d => d.y))
+
+        this.data.nodes = this.data.nodes.map(d => {
+            let ret = d
+            ret.x = xScale(ret.x)
+            ret.y = yScale(ret.y)
+            return(ret)
+        })
+
+        this.data.edges = this.data.edges.map(d => {
+            let ret = d
+            ret.x1 = xScale(ret.x1); ret.x2 = xScale(ret.x2)
+            ret.y1 = yScale(ret.y1); ret.y2 = yScale(ret.y2)
+            return(ret)
+        })
+
+    }
 
     static getNodeFillScale(nodes, visControl) {
         let ret = null
@@ -50,7 +82,7 @@ class PixiGraph {
 
     // TODO: Modify this to generate a texture in stead of 
     // PIXI.Graphics objects
-    
+    // Move this in the constructor
     static getEdgeGraphics(edges) {
         let graphics = new PIXI.Graphics()
         graphics.lineStyle(1, 0xE6E6E6, 1)
@@ -111,26 +143,26 @@ class PixiGraph {
         this.onNodeAddToSelection = onNodeAddToSelection
         
         let zoom = (x, y, isZoomIn) => {
-                let beforeTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
-                
-                let direction = isZoomIn ? 1 : -1
-                let factor = (1 + direction * 0.1)
-                this.edgeContainer.visible = false
-                this.graphContainer.scale.x *= factor
-                this.graphContainer.scale.y *= factor
-                this.graphContainer.updateTransform()
-                
-                
-                setTimeout(() => { this.edgeContainer.visible = true; this.renderer.render(this.rootContainer) }, 200)
-                
-                
-                this.graphContainer.updateTransform()
-                let afterTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
-                
-                this.graphContainer.position.x += (afterTransform.x - beforeTransform.x) * this.graphContainer.scale.x
-                this.graphContainer.position.y += (afterTransform.y - beforeTransform.y) * this.graphContainer.scale.y
-                this.graphContainer.updateTransform()
-                this.renderer.render(this.rootContainer)
+            let beforeTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
+            
+            let direction = isZoomIn ? 1 : -1
+            let factor = (1 + direction * 0.1)
+            this.edgeContainer.visible = false
+            this.graphContainer.scale.x *= factor
+            this.graphContainer.scale.y *= factor
+            this.graphContainer.updateTransform()
+            
+            
+            setTimeout(() => { this.edgeContainer.visible = true; this.renderer.render(this.rootContainer) }, 200)
+            
+            
+            this.graphContainer.updateTransform()
+            let afterTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
+            
+            this.graphContainer.position.x += (afterTransform.x - beforeTransform.x) * this.graphContainer.scale.x
+            this.graphContainer.position.y += (afterTransform.y - beforeTransform.y) * this.graphContainer.scale.y
+            this.graphContainer.updateTransform()
+            this.renderer.render(this.rootContainer)
         }
         
         
@@ -255,10 +287,14 @@ class PixiGraph {
         
         nodeContainer.removeChildren()
         edgeContainer.removeChildren()
+        this.textContainer.removeChildren()
 
         let edgeGraphics = PixiGraph.getEdgeGraphics(edges)
         edgeContainer.addChild(edgeGraphics)
         
+        console.log(d3.extent(nodes, d => d.x))
+        console.log(d3.extent(nodes, d => d.y))
+
         nodes.map((d, i) => {
             let sprite = this.getCircleSprite()
             sprite.x = d.x
