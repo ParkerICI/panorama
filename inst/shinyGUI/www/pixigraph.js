@@ -234,6 +234,7 @@ class PixiGraph {
                 clearCurrentSelection()
                 let rectWidth = pos.x - mouseDownX
                 let rectHeight = pos.y - mouseDownY
+
                 let rectGraphics = new PIXI.Graphics()
                 rectGraphics.lineStyle(2, 0xFF0000)
                 rectGraphics.drawRect(
@@ -243,7 +244,13 @@ class PixiGraph {
 					rectHeight 
                 )
                 rectangleContainer.addChild(rectGraphics)
-                let rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight)
+                let rect = null
+                if(rectWidth < 0)
+                    rect = new PIXI.Rectangle(mouseDownX + rectWidth, mouseDownY + rectHeight,
+                        Math.abs(rectWidth), Math.abs(rectHeight))
+                else
+                    rect = new PIXI.Rectangle(mouseDownX, mouseDownY, rectWidth, rectHeight)
+
                 curSelNodesIdx = []
                 nodeContainer.children.forEach((n, i) => {
                     if (rect.contains(n.x, n.y)) {
@@ -292,9 +299,6 @@ class PixiGraph {
         let edgeGraphics = PixiGraph.getEdgeGraphics(edges)
         edgeContainer.addChild(edgeGraphics)
         
-        console.log(d3.extent(nodes, d => d.x))
-        console.log(d3.extent(nodes, d => d.y))
-
         nodes.map((d, i) => {
             let sprite = this.getCircleSprite()
             sprite.x = d.x
