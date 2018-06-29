@@ -2,9 +2,7 @@
 
 class PixiGraph {
     
-    constructor(width, height) {
-        this.width = width
-        this.height = height
+    constructor(onNodeNewSelection, onNodeAddToSelection) {
         this.renderer = new PIXI.WebGLRenderer({ antialias: true, interactive: true })
         //this.renderer.roundPixels = true
         this.renderer.backgroundColor = 0xFFFFFF
@@ -29,6 +27,9 @@ class PixiGraph {
         // This is used to make sure different graphs are always drawn in the same position
         this.maxXOffset = 0 
         this.maxYOffset = 0
+
+        this.onNodeAddToSelection = onNodeAddToSelection
+        this.onNodeNewSelection = onNodeNewSelection
 
        
     }
@@ -65,6 +66,10 @@ class PixiGraph {
         // TODO: Modify this to generate a texture in stead of 
         // PIXI.Graphics objects
 
+        this.nodeContainer.removeChildren()
+        this.edgeContainer.removeChildren()
+        this.textContainer.removeChildren()
+
         this.edgeGraphics = new PIXI.Graphics()
         this.edgeGraphics.lineStyle(1, 0xE6E6E6, 1)
 
@@ -74,6 +79,42 @@ class PixiGraph {
             this.edgeGraphics.endFill()
         
         })
+
+
+        this.edgeContainer.addChild(this.edgeGraphics)
+
+        this.data.nodes.map((d, i) => {
+            let sprite = this.getCircleSprite()
+            sprite.x = d.x
+            sprite.y = d.y
+            sprite.interactive = true
+            
+            //Given that the anchor point is in the middle the x and y of the hitArea are 0
+            //Also 50 is the radius of the original sprite that then gets scaled down
+            sprite.hitArea = new PIXI.Circle(0, 0, 50)
+
+            sprite.mousedown = e => {
+                if (e.data.originalEvent.shiftKey) {
+                    e.currentTarget.tint = 0xFF0000
+                    this.onNodeAddToSelection([i])
+                }
+            }
+
+            let col = null
+
+            sprite.anchor = new PIXI.Point(0.5, 0.5)
+
+            this.nodeContainer.addChild(sprite)
+
+            if(d.type && d.type == "landmark") {
+                let label = new PIXI.Text(d.Label, {fontFamily : 'Arial', fontSize: 24, fill : 0x210E0F, align : 'left', strokeThickness:1})
+                label.position = new PIXI.Point(d.x, d.y)
+                label.resolution = 2
+                this.textContainer.addChild(label)
+            }
+        })
+
+        
     }
 
     static getNodeFillScale(nodes, visControl) {
@@ -175,7 +216,7 @@ class PixiGraph {
             zoom(e.clientX, e.clientY, e.deltaY < 0)
         })
 
-        this.resize(domEl.offsetWidth, window.innerHeight * 0.8)//domEl.clientHeight)
+        this.resize(domEl.offsetWidth, window.innerHeight * 0.8)
 
         window.addEventListener("resize", e => {
             this.resize(domEl.offsetWidth, window.innerHeight * 0.8)
@@ -289,7 +330,6 @@ class PixiGraph {
     }
 
     draw(visControl) {
-
         if(!this.data)
             return
         
@@ -298,66 +338,32 @@ class PixiGraph {
         let nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)
         let nodeSizeScale = PixiGraph.getNodeSizeScale(nodes, visControl)
         
-        this.nodeContainer.removeChildren()
-        this.edgeContainer.removeChildren()
-        this.textContainer.removeChildren()
-
-        this.edgeContainer.addChild(this.edgeGraphics)
-
-        nodes.map((d, i) => {
-            let sprite = this.getCircleSprite()
-            sprite.x = d.x
-            sprite.y = d.y
-            sprite.interactive = true
-            
+        this.nodeContainer.children.forEach((sprite, i) => {            
+            let node = this.data.nodes[i]
             let size = 0
             
-            if(d.type && d.type == "landmark")
+            if(node.type && node.type == "landmark")
                 size = visControl.landmarkNodeSize
             else
-                size = nodeSizeScale(d.popsize)
+                size = nodeSizeScale(node.popsize)
             
             sprite.scale.x = 0.005 * size
             sprite.scale.y = 0.005 * size
-            //Given that the anchor point is in the middle the x and y of the hitArea are 0
-            //Also 50 is the radius of the original sprite that then gets scaled down
-            sprite.hitArea = new PIXI.Circle(0, 0, 50)
 
-            sprite.mousedown = e => {
-                if (e.data.originalEvent.shiftKey) {
-                    e.currentTarget.tint = 0xFF0000
-                    this.onNodeAddToSelection([i])
-                }
-            }
-            /*
-            sprite.mouseover = function (e) {
-                console.log("Hovering")
-            }*/
             let col = null
 
             if(visControl.nodeColorAttr == "Default") {
-                if(d.type && d.type == "landmark") {
+                if(node.type && node.type == "landmark") 
                     col = 0xFF7580
-                    let label = new PIXI.Text(d.Label, {fontFamily : 'Arial', fontSize: 24, fill : 0x210E0F, align : 'left', strokeThickness:1})
-                    label.position = new PIXI.Point(d.x, d.y)
-                    label.resolution = 2
-                    this.textContainer.addChild(label)
-
-                }
                 else
                     col = 0x4F93DE
-
             }
             else
-                col = parseInt(nodeFillScale(d[visControl.nodeColorAttr]).substr(1, 7), 16)
+                col = parseInt(nodeFillScale(node[visControl.nodeColorAttr]).substr(1, 7), 16)
             
             sprite.tint = col
             sprite.cachedTint = col
-            sprite.anchor = new PIXI.Point(0.5, 0.5)
-
-            this.nodeContainer.addChild(sprite)
         })
-        
         
         if (visControl.selectedNodesIdx && visControl.selectedNodesIdx.length) 
             visControl.selectedNodesIdx.forEach(i => nodeContainer.getChildAt(i).tint = 0xFF0000)

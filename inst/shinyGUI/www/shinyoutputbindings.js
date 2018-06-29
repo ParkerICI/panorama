@@ -1,9 +1,13 @@
 class NetworkOutputBinding extends Shiny.OutputBinding {
 
-    constructor(width, height) {
+    constructor() {
         super()
         this.selectedNodes = new Set()
-        this.pixiGraph = new PixiGraph(width, height) 
+        this.pixiGraph = new PixiGraph(
+            (sel) => this.onNodeNewSelection(sel),
+            (sel) => this.onNodeAddToSelection(sel)
+        )
+
     }
 
     find(scope) {
@@ -34,13 +38,7 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
         this.pixiGraph.graphData = data
 
         if(!el.hasChildNodes())
-            this.pixiGraph.addToDOM(el, 
-                (sel) => this.onNodeNewSelection(sel),
-                (sel) => this.onNodeAddToSelection(sel)
-            )
-        
-
-        
+            this.pixiGraph.addToDOM(el)
     }
 }
 
@@ -68,7 +66,7 @@ class VisControlOutputBinding extends Shiny.OutputBinding {
 
 
 
-let networkOutputBinding = new NetworkOutputBinding(1200, 800)
+let networkOutputBinding = new NetworkOutputBinding()
 let visControlOutputBinding = new VisControlOutputBinding(networkOutputBinding)
 
 Shiny.outputBindings.register(networkOutputBinding, 'networkbinding');
