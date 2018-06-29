@@ -126,16 +126,11 @@ class PixiGraph {
 
     static getNodeFillScale(nodes, visControl) {
         let ret = null
-        
-        if (visControl.nodeColorAttr && visControl.nodeColorAttr != "") {
-            let attr = visControl.nodeColorAttr
-            ret = d3.scale.linear()
-                    .domain(d3.extent(nodes, d => d[attr]))
-                    .range([visControl.colorMin, visControl.colorMax])
-			        .interpolate(d3.interpolateLab)
-        }
-        else
-            ret = val => ""
+        console.log(visControl)
+        ret = d3.scale.linear()
+                .domain(visControl.colorScaleDomain)
+                .range(visControl.colorScaleRange)
+			    .interpolate(d3.interpolateLab)        
         return ret
     }
     
@@ -392,8 +387,15 @@ class PixiGraph {
                 else
                     col = 0x4F93DE
             }
-            else
-                col = parseInt(nodeFillScale(node[visControl.nodeColorAttr]).substr(1, 7), 16)
+            else {
+                let domain = visControl.colorScaleDomain
+                if(node[visControl.nodeColorAttr] > domain[domain.length - 1])
+                    col = parseInt(visControl.colorOver.substr(1, 7), 16)
+                else if(node[visControl.nodeColorAttr] < domain[0])
+                    col = parseInt(visControl.colorUnder.substr(1, 7), 16)
+                else
+                    col = parseInt(nodeFillScale(node[visControl.nodeColorAttr]).substr(1, 7), 16)
+            }
             
             sprite.tint = col
             sprite.cachedTint = col

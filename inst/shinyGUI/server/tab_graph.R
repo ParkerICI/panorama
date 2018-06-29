@@ -201,15 +201,29 @@ output$graphui_viscontrol <- reactive({
     # the scene would not rendered when a different graph is selected
     
     input$graphui_selected_graph
+    
+    colorScaleDomain <- NULL
+    colorScaleRange <- NULL
+    
+    if(input$graphui_color_number == 2) {
+        colorScaleRange <- c(input$graphui_color_min, input$graphui_color_max)
+        colorScaleDomain <- input$graphui_color_scale_lim
+           
+    } else {
+        colorScaleRange <- c(input$graphui_color_min, input$graphui_color_mid, input$graphui_color_max)
+        colorScaleDomain <- c(input$graphui_color_scale_lim[1], input$graphui_color_scale_mid, input$graphui_color_scale_lim[2])
+    }
+
     return(list(
         minNodeSize = input$graphui_min_node_size,
         maxNodeSize = input$graphui_max_node_size,
         nodeSize = input$graphui_node_size,
         nodeColorAttr = input$graphui_node_color_attr,
-        colorMin = input$graphui_color_min,
-        colorMax = input$graphui_color_max,
-        landmarkNodeSize = input$graphui_landmark_node_size,
-        nodeSizeAttr = "CD3"
+        colorUnder = input$graphui_color_under,
+        colorOver = input$graphui_color_over,
+        colorScaleRange = colorScaleRange,
+        colorScaleDomain = colorScaleDomain,
+        landmarkNodeSize = input$graphui_landmark_node_size
     ))
 })
 

@@ -69,7 +69,7 @@ class VisControlOutputBinding extends Shiny.OutputBinding {
     renderValue(el, visControl) {
         if(!visControl)
             return
-        
+
         this.pixiGraph.draw(visControl)
     }
 }
