@@ -23,9 +23,12 @@ class PixiGraph {
         this.graphContainer.addChild(this.textContainer)
         this.rootContainer.addChild(this.graphContainer)
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
-        //this.graphContainer.interactive = true
-
+        
         this.circleTexture = PixiGraph.getCircleTexture()
+
+        // This is used to make sure different graphs are always drawn in the same position
+        this.maxXOffset = 0 
+        this.maxYOffset = 0
 
        
     }
@@ -75,14 +78,23 @@ class PixiGraph {
 */
     set graphData(data) {
         this.data = data
-        let xPadding = 50
-        let yPadding = 50
 
+        let minX = d3.min(this.data.nodes, d => d.x)
+        let minY = d3.min(this.data.nodes, d => d.y)
+
+        if(minX < 0 && (Math.abs(minX) > this.maxXOffset))
+            this.maxXOffset = Math.abs(minX)
+
+        if(minY < 0 && (Math.abs(minY) > this.maxYOffset))
+            this.maxYOffset = Math.abs(minY)
+        
+        let xPadding = 50 + this.maxXOffset
+        let yPadding = 50 + this.maxYOffset
 
         this.data.nodes = this.data.nodes.map(d => {
             let ret = d
             ret.x += xPadding
-            ret.y += yPadding
+            ret.y += yPadding 
             return(ret)
         })
 
