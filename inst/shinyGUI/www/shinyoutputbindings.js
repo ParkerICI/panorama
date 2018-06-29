@@ -40,6 +40,18 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
         if(!el.hasChildNodes())
             this.pixiGraph.addToDOM(el)
     }
+
+    resetPosition() {
+        this.pixiGraph.resetPosition()
+    }
+
+    toggleLandmarkLabels() {
+        this.pixiGraph.toggleLandmarkLabels()
+    }
+
+    toggleClusterLabels() {
+        this.pixiGraph.toggleClusterLabels()
+    }
 }
 
 class VisControlOutputBinding extends Shiny.OutputBinding {
@@ -73,6 +85,22 @@ Shiny.outputBindings.register(networkOutputBinding, 'networkbinding');
 Shiny.outputBindings.register(visControlOutputBinding, 'viscontrolbinding');
 
 
+Shiny.addCustomMessageHandler("reset_graph_position",
+    value => networkOutputBinding.resetPosition()
+)
+
+Shiny.addCustomMessageHandler("toggle_landmark_labels",
+    value => networkOutputBinding.toggleLandmarkLabels()
+)
+
+Shiny.addCustomMessageHandler("toggle_cluster_labels",
+    value => networkOutputBinding.toggleClusterLabels()
+)
+
+
+///////
+
+
 
 function display_edge(option_val, edge_type)
 {
@@ -88,20 +116,6 @@ function display_edge(option_val, edge_type)
         return(false);
 }
 
-function parse_trans_string (a)
-{
-    //This requires the different arguments (transl, scale etc.) to be space-delimited
-    let b = {};
-    console.log(a);
-    for (let i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g))
-    {
-        let c = a[i].match(/[\w\.\-]+/g);
-        b[c.shift()] = c;
-    }
-    return b;
-}
-
-
 Shiny.addCustomMessageHandler("reset_colors",
     function(value)
     {
@@ -109,20 +123,9 @@ Shiny.addCustomMessageHandler("reset_colors",
     }
 );
 
-Shiny.addCustomMessageHandler("reset_graph_position",
-    function(value)
-    {
-        d3.select("g").attr("transform", "");
-    }
-);
 
-Shiny.addCustomMessageHandler("toggle_label",
-    function(value)
-    {
-        let target = value.target == "cluster" ? ".label-cluster" : ".label-landmark";
-        d3.selectAll(target).style("display", value.display);
-    }
-);
+
+
 
 
 Shiny.addCustomMessageHandler("toggle_display_edges",
@@ -139,25 +142,3 @@ Shiny.addCustomMessageHandler("toggle_display_edges",
             d3.selectAll(".link").style("display", function(d) {return(d.type == "highest_scoring" ? "" : "none")});*/
     }
 );
-
-Shiny.addCustomMessageHandler("get_selected_nodes",
-    function(value)
-    {
-        let res = d3.selectAll(".selected").data().map(function(d) {return(d.name)});
-        Shiny.onInputChange("graphui_selected_nodes", res);
-    }
-);
-
-
-Shiny.addCustomMessageHandler("toggle_node_size",
-    function(value)
-    {
-        if(value.display == "proportional")
-            d3.selectAll("circle.node").attr("r", function(d) {return d.size;});
-        else if(value.display == "default")
-            d3.selectAll("circle.node").attr("r", function(d) {return d.type == "1" ? "8" : "5"});
-    }
-);
-
-
-//</script>

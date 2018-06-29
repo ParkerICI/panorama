@@ -115,18 +115,18 @@ fluidPage(
             )
         ),
         fluidRow(
-            column(3,
+            column(4,
                 actionButton("graphui_reset_graph_position", "Reset graph position")
             ),
-            column(3,
+            column(4,
                 actionButton("graphui_toggle_landmark_labels", "Toggle landmark labels")       
             ),
-            column(3,
+            column(4,
                 actionButton("graphui_toggle_cluster_labels", "Toggle cluster labels") 
-            ),
-            column(3,
-                actionButton("graphui_export_selected_clusters", "Export selected clusters")
             )
+            #column(3,
+            #    actionButton("graphui_export_selected_clusters", "Export selected clusters")
+            #)
         ),
         fluidRow(
             column(12,
@@ -247,6 +247,21 @@ output$graphui_plot = renderPlot({
     print(p)
 })
 
+observeEvent(input$graphui_reset_graph_position, {
+        session$sendCustomMessage(type = "reset_graph_position", "none")
+    }
+)
+
+observeEvent(input$graphui_toggle_landmark_labels, {
+        session$sendCustomMessage(type = "toggle_landmark_labels", "none")
+    }
+)
+
+observeEvent(input$graphui_toggle_cluster_labels, {
+        session$sendCustomMessage(type = "toggle_cluster_labels", "none")
+    }
+)
+
 
 #output$graphui_plot_title = renderPrint({
 #    if(!is.null(input$graphui_selected_cluster) && input$graphui_selected_cluster != "")
@@ -273,20 +288,9 @@ observe({
     }
 })
 
-observe({
-    if(!is.null(input$graphui_reset_graph_position) && input$graphui_reset_graph_position != 0)
-    {
-        #session$sendCustomMessage(type = "reset_graph_position", "none")
-    }
-})
 
-observe({
-    if(!is.null(input$graphui_toggle_landmark_labels) && input$graphui_toggle_landmark_labels != 0)
-    {
-        display <- ifelse(input$graphui_toggle_landmark_labels %% 2 == 0, "", "none")
-        #session$sendCustomMessage(type = "toggle_label", list(target = "landmark", display = display))
-    }
-})
+
+
 
 observe({
         display_edges <- input$graphui_display_edges

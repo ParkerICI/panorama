@@ -103,15 +103,22 @@ class PixiGraph {
             let col = null
 
             sprite.anchor = new PIXI.Point(0.5, 0.5)
-
             this.nodeContainer.addChild(sprite)
 
+            let label = new PIXI.Text(d.Label)
+            let fontSize = 12
+            label.visible = false
+            
             if(d.type && d.type == "landmark") {
-                let label = new PIXI.Text(d.Label, {fontFamily : 'Arial', fontSize: 24, fill : 0x210E0F, align : 'left', strokeThickness:1})
-                label.position = new PIXI.Point(d.x, d.y)
-                label.resolution = 2
-                this.textContainer.addChild(label)
+                label.visible = true
+                fontSize = 24 
             }
+            
+            label.style = {fontFamily : 'Arial', fontSize: fontSize, fill : 0x210E0F, align : 'left', strokeThickness:1}
+            label.position = new PIXI.Point(d.x, d.y)
+            label.resolution = 2
+
+            this.textContainer.addChild(label)
         })
 
         
@@ -175,7 +182,34 @@ class PixiGraph {
     }
     
     
-    
+    resetPosition() {
+        this.graphContainer.scale.x = 1
+        this.graphContainer.scale.y = 1
+
+        this.graphContainer.position.x = 0
+        this.graphContainer.position.y = 0
+
+        this.renderer.render(this.rootContainer)
+    }
+
+    toggleLandmarkLabels() {
+        this.textContainer.children.forEach((d, i) => {
+            let node = this.data.nodes[i]
+            if(node.type && node.type == "landmark")
+                d.visible = !d.visible
+        })
+        this.renderer.render(this.rootContainer)
+    }
+
+    toggleClusterLabels() {
+        this.textContainer.children.forEach((d, i) => {
+            let node = this.data.nodes[i]
+            if(!node.type || node.type == "cluster")
+                d.visible = !d.visible
+        })
+        this.renderer.render(this.rootContainer)
+    }
+
     addToDOM(domEl, onNodeNewSelection, onNodeAddToSelection) {
         domEl.appendChild(this.renderer.view)
         this.addDragNDrop()
