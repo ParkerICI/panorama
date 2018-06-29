@@ -124,6 +124,9 @@ graph_to_json <- function(G) {
     x <- (x / trans$scaling) - trans$offset.x
     y <- (y / trans$scaling) - trans$offset.y
     
+    #x <- x - min(x)
+    #y <- y - min(y)
+    
     edges <- cbind(edges, x1 = x[edges[, "source"] + 1], x2 = x[edges[, "target"] + 1])
     edges <- cbind(edges, y1 = y[edges[, "source"] + 1], y2 = y[edges[, "target"] + 1])
     edges <- cbind(edges, id = 1:nrow(edges))

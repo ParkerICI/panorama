@@ -2,8 +2,6 @@ window.open("?plot=true", "_blank")
 
 
 $(document).on('shiny:value', event => {
-    console.log(event)
-
 
     if(event.target.id == "graphui_plot") {
         event.preventDefault()

@@ -1,4 +1,6 @@
 canvas {
     border-style: solid;
+    display: block;
+    height: 100%;
 }
 

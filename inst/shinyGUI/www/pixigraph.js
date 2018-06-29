@@ -5,7 +5,7 @@ class PixiGraph {
     constructor(width, height) {
         this.width = width
         this.height = height
-        this.renderer = new PIXI.WebGLRenderer(width, height, { antialias: true, interactive: true })
+        this.renderer = new PIXI.WebGLRenderer({ antialias: true, interactive: true })
         //this.renderer.roundPixels = true
         this.renderer.backgroundColor = 0xFFFFFF
 
@@ -22,17 +22,90 @@ class PixiGraph {
         this.graphContainer.addChild(this.nodeContainer)
         this.graphContainer.addChild(this.textContainer)
         this.rootContainer.addChild(this.graphContainer)
-        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, width, height)
+        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
+        //this.graphContainer.interactive = true
 
         this.circleTexture = PixiGraph.getCircleTexture()
 
        
     }
+/*
+    resize(screenWidth, screenHeight) {
+        let xExtent = d3.extent(this.data.nodes, d => d.x)
+        let yExtent = d3.extent(this.data.nodes, d => d.y)
 
+        let graphWidth = xExtent[1] - xExtent[0]
+        let graphHeight = yExtent[1] - yExtent[0]
+
+        console.log("graph")
+        console.log(graphWidth, graphHeight)
+
+        let graphOrientation = graphWidth > graphHeight ? 'landscape' : 'portrait'
+        let graphLandscapeScreenRatio = graphWidth / graphHeight
+        let graphPortraitScreenRatio = graphHeight / graphWidth
+    
+        let isScreenPortrait = screenHeight >= screenWidth
+        const isScreenLandscape = !isScreenPortrait
+        const screenRatio = screenWidth / screenHeight;
+        
+        let newWidth
+        let newHeight
+        
+        if ((graphOrientation === 'landscape' && isScreenLandscape) || (graphOrientation === 'portrait' && isScreenPortrait) ) {
+            if ( screenRatio < graphLandscapeScreenRatio ) {
+                newWidth = graphWidth;
+                newHeight = Math.round( graphWidth / screenRatio )
+            } else {
+                newWidth = Math.round( graphHeight * screenRatio )
+                newHeight = graphHeight
+            }
+        } else {
+            if ( screenRatio < graphPortraitScreenRatio ) {
+                newWidth = graphHeight;
+                newHeight = Math.round( graphHeight / screenRatio )
+            } else {
+                newWidth = Math.round( graphWidth * screenRatio )
+                newHeight = graphWidth
+            }
+        }
+    
+        this.renderer.resize( newWidth, newHeight );
+    
+    }
+*/
     set graphData(data) {
         this.data = data
+        let xPadding = 50
+        let yPadding = 50
+
+
+        this.data.nodes = this.data.nodes.map(d => {
+            let ret = d
+            ret.x += xPadding
+            ret.y += yPadding
+            return(ret)
+        })
+
+        this.data.edges = this.data.edges.map(d => {
+            let ret = d
+            ret.x1 += xPadding; ret.x2 += xPadding
+            ret.y1 += yPadding; ret.y2 += yPadding
+            return(ret)
+        })
+
+
+        /*
         let xPadding = Math.round(this.width * 0.05)
         let yPadding = Math.round(this.height * 0.05)
+
+        let xExtent = d3.extent(this.data.nodes, d => d.x)
+        let yExtent = d3.extent(this.data.nodes, d => d.y)
+        let graphWidth = xExtent[1] - xExtent[0]
+        let graphHeight = yExtent[1] - yExtent[0]
+
+        console.log("Extent")
+        console.log(xExtent)
+        console.log(yExtent)
 
         let xScale = d3.scale.linear()
                         .range([0 + xPadding, this.width - xPadding])
@@ -42,20 +115,23 @@ class PixiGraph {
                         .range([0 + yPadding, this.height - yPadding])
                         .domain(d3.extent(this.data.nodes, d => d.y))
 
+        let minX = Math.abs(d3.min(this.data.nodes, d => d.x))// + xPadding
+        let minY = Math.abs(d3.min(this.data.nodes, d => d.y))// + yPadding
+
         this.data.nodes = this.data.nodes.map(d => {
             let ret = d
-            ret.x = xScale(ret.x)
-            ret.y = yScale(ret.y)
+            ret.x += minX //xScale(ret.x)
+            ret.y += minY //yScale(ret.y)
             return(ret)
         })
 
         this.data.edges = this.data.edges.map(d => {
             let ret = d
-            ret.x1 = xScale(ret.x1); ret.x2 = xScale(ret.x2)
-            ret.y1 = yScale(ret.y1); ret.y2 = yScale(ret.y2)
+            ret.x1 += minX; ret.x2 += minX
+            ret.y1 += minY; ret.y2 += minY
             return(ret)
         })
-        
+        */
         // TODO: Modify this to generate a texture in stead of 
         // PIXI.Graphics objects
 
@@ -169,6 +245,12 @@ class PixiGraph {
             zoom(e.clientX, e.clientY, e.deltaY < 0)
         })
 
+        this.resize(domEl.offsetWidth, window.innerHeight * 0.8)//domEl.clientHeight)
+
+        window.addEventListener("resize", e => {
+            this.resize(domEl.offsetWidth, window.innerHeight * 0.8)
+        })
+
         
     }
     
@@ -271,11 +353,21 @@ class PixiGraph {
         }
     }
 
+    resize(width, height) {
+        this.renderer.resize(width, height)
+        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
+    }
+
     draw(visControl) {
 
         if(!this.data)
             return
 
+        let domEl = this.renderer.view.parentNode
+
+        
+   
+        
         let nodes = this.data.nodes
         let edges = this.data.edges
         let nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)

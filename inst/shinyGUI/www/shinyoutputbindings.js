@@ -26,18 +26,20 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
     renderValue(el, Rdata) {
         if(Rdata == null) return
 
-        if(!el.hasChildNodes())
-            this.pixiGraph.addToDOM(el, 
-                (sel) => this.onNodeNewSelection(sel),
-                (sel) => this.onNodeAddToSelection(sel)
-            )
-        
         let data = {
             nodes: JSON.parse(Rdata.nodes),
             edges: JSON.parse(Rdata.edges)
         }
 
         this.pixiGraph.graphData = data
+
+        if(!el.hasChildNodes())
+            this.pixiGraph.addToDOM(el, 
+                (sel) => this.onNodeNewSelection(sel),
+                (sel) => this.onNodeAddToSelection(sel)
+            )
+        
+
         
     }
 }
