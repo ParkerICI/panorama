@@ -184,7 +184,17 @@ output$graphui_mainnet <- reactive({
     return(ret)
 })
 
-
+get_node_color_attr <- reactive({
+    ret <- NULL
+    
+    if(input$graphui_active_sample == "All")
+        ret <- input$graphui_node_color_attr
+    else
+        ret <- paste(input$graphui_node_color_attr, input$graphui_active_sample, sep = "@")
+    
+    return(ret)
+    
+})
 
 
 
@@ -218,7 +228,7 @@ output$graphui_viscontrol <- reactive({
         minNodeSize = input$graphui_min_node_size,
         maxNodeSize = input$graphui_max_node_size,
         nodeSize = input$graphui_node_size,
-        nodeColorAttr = input$graphui_node_color_attr,
+        nodeColorAttr = get_node_color_attr(),
         colorUnder = input$graphui_color_under,
         colorOver = input$graphui_color_over,
         colorScaleRange = colorScaleRange,
