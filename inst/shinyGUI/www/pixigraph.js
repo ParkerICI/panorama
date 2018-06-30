@@ -205,13 +205,9 @@ class PixiGraph {
         this.renderer.render(this.rootContainer)
     }
 
-    addToDOM(domEl, onNodeNewSelection, onNodeAddToSelection) {
+    addToDOM(domEl) {
         domEl.appendChild(this.renderer.view)
         this.addDragNDrop()
-
-        this.onNodeNewSelection = onNodeNewSelection
-
-        this.onNodeAddToSelection = onNodeAddToSelection
         
         let zoom = (x, y, isZoomIn) => {
             let beforeTransform = this.renderer.plugins.interaction.eventData.data.getLocalPosition(this.graphContainer)
@@ -381,7 +377,7 @@ class PixiGraph {
 
             let col = null
 
-            if(visControl.nodeColorAttr == "Default") {
+            if(visControl.nodeColorAttr == null) {
                 if(node.type && node.type == "landmark") 
                     col = 0xFF7580
                 else
@@ -389,12 +385,12 @@ class PixiGraph {
             }
             else {
                 let domain = visControl.colorScaleDomain
-                if(node[visControl.nodeColorAttr] > domain[domain.length - 1])
+                if(visControl.nodeColorAttr[i] > domain[domain.length - 1])
                     col = parseInt(visControl.colorOver.substr(1, 7), 16)
-                else if(node[visControl.nodeColorAttr] < domain[0])
+                else if(visControl.nodeColorAttr[i] < domain[0])
                     col = parseInt(visControl.colorUnder.substr(1, 7), 16)
                 else
-                    col = parseInt(nodeFillScale(node[visControl.nodeColorAttr]).substr(1, 7), 16)
+                    col = parseInt(nodeFillScale(visControl.nodeColorAttr[i]).substr(1, 7), 16)
             }
             
             sprite.tint = col

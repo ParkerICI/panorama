@@ -185,15 +185,19 @@ output$graphui_mainnet <- reactive({
 })
 
 get_node_color_attr <- reactive({
-    ret <- NULL
-    
-    if(input$graphui_active_sample == "All")
-        ret <- input$graphui_node_color_attr
-    else
-        ret <- paste(input$graphui_node_color_attr, input$graphui_active_sample, sep = "@")
-    
-    return(ret)
-    
+    if(input$graphui_node_color_attr == "Default")
+        return(NULL)
+    else {
+        x <- NULL
+        if(input$graphui_active_sample == "All")
+            x <- input$graphui_node_color_attr
+        else
+            x <- paste(input$graphui_node_color_attr, input$graphui_active_sample, sep = "@")
+        
+        G <- get_graph()
+        
+        return(igraph::get.vertex.attribute(G, x))
+    }
 })
 
 

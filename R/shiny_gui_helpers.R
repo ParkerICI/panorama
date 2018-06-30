@@ -142,6 +142,13 @@ graph_to_json <- function(G) {
     nodes$popsize[nodes$type == "landmark"] <- 0
     nodes$popsize <- nodes$popsize / sum(nodes$popsize)
     
+    print("FIXMEEEE Need labels here")
+    
+    nodes <- nodes[, c("x", "y", "popsize")]
+    
+    if(!is.null(V(G)$type))
+       nodes$type <- V(G)$type
+    
     ret <- c(nodes = jsonlite::toJSON(nodes), edges = jsonlite::toJSON(edges))
     return(ret)
 }
