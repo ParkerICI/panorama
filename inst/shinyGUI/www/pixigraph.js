@@ -146,10 +146,10 @@ class PixiGraph {
 
         let v = nodes.filter(d => !d.type || d.type != "landmark")
 
-        if (visControl.nodeSize == "Proportional") {
+        if (visControl.nodeSizeAttr != null) {
             ret = d3.scale.linear()
                     .range([visControl.minNodeSize, visControl.maxNodeSize])
-                    .domain(d3.extent(v, d => d.popsize))
+                    .domain(d3.extent(visControl.nodeSizeAttr))
         }
         else //Return a constant number
             ret = val => 0.8 * visControl.landmarkNodeSize
@@ -369,8 +369,12 @@ class PixiGraph {
             
             if(node.type && node.type == "landmark")
                 size = visControl.landmarkNodeSize
-            else
-                size = nodeSizeScale(node.popsize)
+            else {
+                if(visControl.nodeSizeAttr == null)
+                    size = 0.8 * visControl.landmarkNodeSize
+                else
+                    size = nodeSizeScale(visControl.nodeSizeAttr[i])
+            }
             
             sprite.scale.x = 0.005 * size
             sprite.scale.y = 0.005 * size

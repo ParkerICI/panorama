@@ -139,12 +139,9 @@ graph_to_json <- function(G) {
     nodes <- igraph::get.data.frame(G, what = c("vertices"))
     nodes$x <- x
     nodes$y <- y
-    nodes$popsize[nodes$type == "landmark"] <- 0
-    nodes$popsize <- nodes$popsize / sum(nodes$popsize)
+   
     
-    print("FIXMEEEE Need labels here")
-    
-    nodes <- nodes[, c("x", "y", "popsize")]
+    nodes <- nodes[, c("x", "y", "Label", "popsize")]
     
     if(!is.null(V(G)$type))
        nodes$type <- V(G)$type

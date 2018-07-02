@@ -184,6 +184,30 @@ output$graphui_mainnet <- reactive({
     return(ret)
 })
 
+get_node_size_attr <- reactive({
+    G <- get_graph()
+    
+    if(is.null(G))
+        return(NULL)
+    else {
+        if(input$graphui_node_size == "Default")
+            return(NULL)
+        else if(input$graphui_node_size == "Proportional") {
+            x <- NULL
+            if(input$graphui_active_sample == "All")
+                x <- "popsize"
+            else
+                x <- paste("popsize", input$graphui_active_sample, sep = "@")
+            
+            G <- get_graph()
+
+            ret <- igraph::get.vertex.attribute(G, x)
+
+            return(ret / sum(ret))
+        }
+    }
+})
+
 get_node_color_attr <- reactive({
     if(input$graphui_node_color_attr == "Default")
         return(NULL)
@@ -199,6 +223,7 @@ get_node_color_attr <- reactive({
         return(igraph::get.vertex.attribute(G, x))
     }
 })
+
 
 
 
@@ -231,8 +256,8 @@ output$graphui_viscontrol <- reactive({
     return(list(
         minNodeSize = input$graphui_min_node_size,
         maxNodeSize = input$graphui_max_node_size,
-        nodeSize = input$graphui_node_size,
         nodeColorAttr = get_node_color_attr(),
+        nodeSizeAttr = get_node_size_attr(),
         colorUnder = input$graphui_color_under,
         colorOver = input$graphui_color_over,
         colorScaleRange = colorScaleRange,
