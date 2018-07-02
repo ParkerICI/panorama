@@ -152,7 +152,6 @@ observe({
     G <- get_graph()
     if(!is.null(G)) {
         attrs <- scaffold2:::get_numeric_vertex_attributes(G)
-        node.size.attr <- scaffold2:::combine_marker_sample_name("popsize", input$graphui_active_sample)
         
         isolate({
             sel.marker <- NULL
@@ -160,8 +159,9 @@ observe({
                 sel.marker <- input$graphui_node_color_attr
             else
                 sel.marker <- "Default"
+            markers.for.plotting <- attrs[attrs != "popsize"]
             updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs), selected = sel.marker)
-            updateSelectInput(session, "graphui_markers_to_plot", choices = attrs, selected = attrs)
+            updateSelectInput(session, "graphui_markers_to_plot", choices = markers.for.plotting, selected = markers.for.plotting)
             sample.names <- scaffold2:::get_sample_names(G)
             updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
                                 selected = input$graphui_active_sample)
@@ -220,7 +220,20 @@ get_node_color_attr <- reactive({
         
         G <- get_graph()
         
-        return(igraph::get.vertex.attribute(G, x))
+        ret <- igraph::get.vertex.attribute(G, x)
+        
+        if(input$graphui_stats_relative_to != "Absolute") {
+            rel.to <- paste(input$graphui_node_color_attr, input$graphui_stats_relative_to, sep = "@")
+            
+            if(input$graphui_stats_type == "Difference")
+                ret <- ret - igraph::get.vertex.attribute(G, rel.to)
+            else if(input$graphui_stats_type == "Ratio")
+                ret <- ret / igraph::get.vertex.attribute(G, rel.to)
+            ret[is.infinite(ret)] <- NA
+        }
+        
+        
+        return(ret)
     }
 })
 
