@@ -178,7 +178,7 @@ output$graphui_mainnet <- reactive({
     ret <- NULL
     
     if(!is.null(G)) 
-        ret <- scaffold2:::graph_to_json(G)
+        ret <- scaffold2:::graph_to_json(G, input$graphui_display_edges)
     
     return(ret)
 })
@@ -249,9 +249,11 @@ observe({
 output$graphui_viscontrol <- reactive({
     # Taking this dependency here is necessary because 
     # chaging the viscontrol object is what triggers the re-rendering. Without this
-    # the scene would not rendered when a different graph is selected
+    # the scene would not rendered when a different graph is selected, or when
+    # the edges to display are changed
     
     input$graphui_selected_graph
+    input$graphui_display_edges
     
     colorScaleDomain <- NULL
     colorScaleRange <- NULL

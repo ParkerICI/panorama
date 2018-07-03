@@ -100,7 +100,7 @@ export_clusters <- function(working.dir, sel.graph, sel.nodes)
 
 
 
-graph_to_json <- function(G) {
+graph_to_json <- function(G, sel.edges = NULL) {
     edges <- data.frame(igraph::get.edgelist(G, names = F) - 1)
     colnames(edges) <- c("source", "target")
     svg.width <- 1200
@@ -127,7 +127,18 @@ graph_to_json <- function(G) {
     
     edges <- cbind(edges, x1 = x[edges[, "source"] + 1], x2 = x[edges[, "target"] + 1])
     edges <- cbind(edges, y1 = y[edges[, "source"] + 1], y2 = y[edges[, "target"] + 1])
-    edges <- cbind(edges, id = 1:nrow(edges), type = E(G)$type)
+    edges <- cbind(edges, id = 1:nrow(edges))
+    
+    if(!is.null(sel.edges)) {
+        edges.df <- igraph::get.data.frame(G, what = "edges")
+        if(sel.edges == "Highest scoring")
+            edges <- edges[edges.df$highest_scoring == 1, ]
+        else if(sel.edges == "To landmark")
+            edges <- edges[edges.df$cluster_to_landmark == 1, ]
+        else if(sel.edges == "Inter cluster")
+            edges <- edges[edges.df$inter_cluster == 1, ]
+    }
+    
     
     nodes <- igraph::get.data.frame(G, what = c("vertices"))
     nodes$x <- x
