@@ -63,7 +63,7 @@ class PixiGraph {
             return(ret)
         })
 
-        // TODO: Modify this to generate a texture in stead of 
+        // TODO: Modify this to generate a texture instead of 
         // PIXI.Graphics objects
 
         this.nodeContainer.removeChildren()
@@ -358,10 +358,8 @@ class PixiGraph {
         if(!this.data)
             return
         
-        let nodes = this.data.nodes
-        let edges = this.data.edges
-        let nodeFillScale = PixiGraph.getNodeFillScale(nodes, visControl)
-        let nodeSizeScale = PixiGraph.getNodeSizeScale(nodes, visControl)
+        let nodeFillScale = PixiGraph.getNodeFillScale(this.data.nodes, visControl)
+        let nodeSizeScale = PixiGraph.getNodeSizeScale(this.data.nodes, visControl)
         
         this.nodeContainer.children.forEach((sprite, i) => {            
             let node = this.data.nodes[i]

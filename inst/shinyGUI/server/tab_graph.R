@@ -177,10 +177,9 @@ output$graphui_mainnet <- reactive({
     G <- get_graph()
     ret <- NULL
     
-    if(!is.null(G)) {
+    if(!is.null(G)) 
         ret <- scaffold2:::graph_to_json(G)
-        ret$trans_to_apply <- isolate({input$graphui_cur_transform})
-    }
+    
     return(ret)
 })
 
@@ -277,6 +276,12 @@ output$graphui_viscontrol <- reactive({
         colorScaleDomain = colorScaleDomain,
         landmarkNodeSize = input$graphui_landmark_node_size
     ))
+})
+
+
+observe({
+    updateSliderInput(session, "graphui_color_scale_lim", min = input$graphui_color_scale_min,
+                          max = input$graphui_color_scale_max)
 })
 
 #output$graphui_table <- renderDataTable({

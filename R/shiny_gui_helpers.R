@@ -127,14 +127,7 @@ graph_to_json <- function(G) {
     
     edges <- cbind(edges, x1 = x[edges[, "source"] + 1], x2 = x[edges[, "target"] + 1])
     edges <- cbind(edges, y1 = y[edges[, "source"] + 1], y2 = y[edges[, "target"] + 1])
-    edges <- cbind(edges, id = 1:nrow(edges))
-    edges <- cbind(edges, is_highest_scoring = 0)
-    edges <- cbind(edges, edge_type = "")
-    
-    #Set as true for the highest scoring edges of cluster vertices
-    edges[, "is_highest_scoring"][V(G)$highest_scoring_edge[V(G)$type == "cluster"]] <- 1
-    if("edge_type" %in% igraph::list.edge.attributes(G)) #Old graphs did not have this
-        edges[, "edge_type"] <- E(G)$edge_type
+    edges <- cbind(edges, id = 1:nrow(edges), type = E(G)$type)
     
     nodes <- igraph::get.data.frame(G, what = c("vertices"))
     nodes$x <- x
@@ -146,7 +139,7 @@ graph_to_json <- function(G) {
     if(!is.null(V(G)$type))
        nodes$type <- V(G)$type
     
-    ret <- c(nodes = jsonlite::toJSON(nodes), edges = jsonlite::toJSON(edges))
+    ret <- list(nodes = jsonlite::toJSON(nodes), edges = jsonlite::toJSON(edges))
     return(ret)
 }
 
