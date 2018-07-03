@@ -309,9 +309,12 @@ output$graphui_plot = renderPlot({
             if((length(col.names) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
                 G <- get_graph()
                 #TODO: remove landmarks from here
+                samples.to.plot <- NULL
+                if(length(input$graphui_samples_to_plot) > 0)
+                    samples.to.plot <- input$graphui_samples_to_plot
                 
                 p <- scaffold2:::plot_clusters(G, input$graphui_selected_nodes, working.directory,   
-                                              input$graphui_markers_to_plot, input$graphui_pool_cluster_data, input$graphui_plot_type)
+                                              input$graphui_markers_to_plot, input$graphui_pool_cluster_data, input$graphui_plot_type, samples.to.plot)
                 
             }
                 

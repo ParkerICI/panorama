@@ -69,8 +69,10 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
 }
 
 
-
-plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type, samples.to.plot = NULL) {
+#samples.to.plot need to be specified if pool.samples = F, and this is a multi files clustering
+#pool clusters implies pool samples
+plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data, plot.type, pool.samples = TRUE, samples.to.plot = NULL, facet.by = "sample") {
+ 
     cl.labels <- V(G)$Label[clusters]
     clusters.data <- NULL
     
@@ -87,9 +89,18 @@ plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data
     }
     
     
+    if(pool.samples)
+        clusters.data$sample <- NULL
+    
+    if(pool.cluster.data) {
+        clusters.data$cellType <- "Clusters"
+        clusters.data$sample <- NULL
+    }
+    
     temp <- clusters.data[, c(col.names, "cellType")]
     if(!is.null(clusters.data$sample))
         temp$sample <- as.factor(clusters.data$sample)
+    clusters.data <- temp
     
     landmarks.data <- NULL
     
@@ -104,22 +115,20 @@ plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data
         #This only works if the col.names are actually present in the clustered.data
         #TODO: figure out a consistent way to deal with panel mismatches
         
-        common.names <- col.names[(col.names %in% names(clusters.data)) & (col.names %in% names(landmarks.data))]
+        common.names <- intersect(col.names, names(landmarks.data))
         landmarks.data <- landmarks.data[, c(common.names, "cellType")]
         landmarks.data <- add_missing_columns(landmarks.data, col.names, fill.data = NA)
+
         
         if(!is.null(clusters.data$sample))
-            landmarks.data <- data.frame(landmarks.data, sample = rep(clusters.data$sample, each = nrow(landmarks.data)))
+            # Duplicate landmarks data for each sample for plotting
+            landmarks.data <- data.frame(landmarks.data, sample = rep(unique(clusters.data$sample), each = nrow(landmarks.data)),
+                                         check.names = FALSE, stringsAsFactors = FALSE)
         
         
         
     }
-    
-    if(pool.cluster.data) {
-        clusters.data$cellType <- "Clusters"
-        clusters.data$sample <- NULL
-    }
-    
+
     temp <- rbind(clusters.data, landmarks.data)
     
     p <- NULL
@@ -128,13 +137,13 @@ plot_clusters <- function(G, clusters, working.dir, col.names, pool.cluster.data
         p <- density_scatterplot(temp, x_name = col.names[1], y_name = col.names[2], grouping = "cellType")
     
     else 
-        p <- expression_plot(temp, plot.type)
+        p <- expression_plot(temp, plot.type, facet.by)
 
     return(p)
 }
 
 
-expression_plot <- function(tab, plot.type) {
+expression_plot <- function(tab, plot.type, facet.by = "sample") {
     
     # Add error message that you cannot subset density plots by sample
     p <- NULL
@@ -145,10 +154,16 @@ expression_plot <- function(tab, plot.type) {
         tab$variable <- as.factor(tab$variable)
         tab$cellType <- as.factor(tab$cellType)
         
-        if(plot.type == "Boxplot") 
-            p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
-                  + ggplot2::geom_boxplot()
-                  + ggplot2::facet_wrap(~sample))
+        if(plot.type == "Boxplot") {
+            if(facet.by == "sample")
+                p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
+                      + ggplot2::geom_boxplot()
+                      + ggplot2::facet_wrap(~sample))
+            else if(facet.by == "variable")
+                p <- (ggplot2::ggplot(ggplot2::aes(x = sample, fill = cellType, y = value), data = tab) 
+                      + ggplot2::geom_boxplot()
+                      + ggplot2::facet_wrap(~variable))
+        }
         
     }
     else {
@@ -171,10 +186,10 @@ expression_plot <- function(tab, plot.type) {
 }
 
 run_test <- function() {
-    setwd("C:/Users/fgherardini/temp/scaffold_demo/scaffold_result")
-    fname <- "A_cells_found_normalized_A_cells_found_normalized.fcs - A_cells_found_normalized.fcs_Cells.fcs.clustered.txt.graphml"
+    setwd("C:/Users/fgherardini/temp/dave_flu/fcs files/scaffold_result/")
+    fname <- "group1.graphml"
     G <- igraph::read.graph(fname, format = "graphml")
-    scaffold2:::plot_scaffold_clusters(c("c1", "c2", "c3"), G, fname, "./", col.names = c("CD3", "CD45", "CD19", "CD14"), F, "Boxplot")
+    scaffold2:::plot_clusters(G, c(20, 21 , 22), "./", col.names = c("CD3", "CD45", "CD19", "CD14"), T, "Boxplot", pool.samples = T, c("101_3.fcs", "102_4.fcs"))
                            
     
     
