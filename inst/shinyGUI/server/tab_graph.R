@@ -87,10 +87,12 @@ fluidPage(
                 selectInput("graphui_plot_type", "Plot type:", choices = c("Density", "Boxplot", "Scatterplot"), width = "100%")
             ),
             column(4,
-                actionButton("graphui_plot_clusters", "Plot selected clusters")
+                selectInput("graphui_facet_by", "Facet by:", choices = c("Sample", "Variable"), width = "100%")
             ),
             column(4, 
-                checkboxInput("graphui_pool_cluster_data", "Pool cluster data", value = FALSE)
+                checkboxInput("graphui_pool_clusters_data", "Pool clusters data", value = FALSE),
+                checkboxInput("graphui_pool_samples_data", "Pool samples data", value = FALSE),
+                actionButton("graphui_plot_clusters", "Plot selected clusters")
             )
         ),
         selectInput("graphui_markers_to_plot", "Markers to plot in cluster view:", choices = c(""), multiple = T, width = "100%"),
@@ -308,14 +310,31 @@ output$graphui_plot = renderPlot({
             col.names <- input$graphui_markers_to_plot
             if((length(col.names) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
                 G <- get_graph()
-                #TODO: remove landmarks from here
+                
+                
                 samples.to.plot <- NULL
-                if(length(input$graphui_samples_to_plot) > 0)
+                if(length(input$graphui_samples_to_plot) > 0) {
+                    if(input$graphui_plot_type == "Density" && !input$graphui_pool_samples_data) {
+                        showModal(modalDialog(
+                            "If you are plotting data for individual samples you cannot use Density plots",
+                            "Please either select Boxplot, or pool samples data",
+                            easyClose = TRUE
+                        ))
+                        return(p)
+                    }
                     samples.to.plot <- input$graphui_samples_to_plot
-                
-                p <- scaffold2:::plot_clusters(G, input$graphui_selected_nodes, working.directory,   
-                                              input$graphui_markers_to_plot, input$graphui_pool_cluster_data, input$graphui_plot_type, samples.to.plot)
-                
+                }
+
+                p <- scaffold2:::plot_clusters(G, 
+                                    clusters = input$graphui_selected_nodes, 
+                                    col.names = input$graphui_markers_to_plot,
+                                    working.dir = working.directory,
+                                    plot.type = input$graphui_plot_type,
+                                    pool.clusters = input$graphui_pool_clusters_data,
+                                    pool.samples = input$graphui_pool_samples_data,
+                                    samples.to.plot = samples.to.plot,
+                                    facet.by = input$graphui_facet_by
+                )
             }
                 
         })

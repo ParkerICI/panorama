@@ -1,4 +1,4 @@
-options(stringsAsFactors = F)
+
 
 #' @export
 plot_communities <- function(G, att.names, ...) {
@@ -37,9 +37,17 @@ density_scatterplot <- function(tab, x_name, y_name, grouping) {
 }
 
 
-load_rds_data <- function(v, dir) {
+load_rds_data <- function(v, dir, skip.missing = FALSE) {
     ret <- lapply(v, function(s) {
-        readRDS(file.path(dir, sprintf("%s.rds", s)))
+        fname <- file.path(dir, sprintf("%s.rds", s))
+        if(file.exists(fname))
+            readRDS(file.path(dir, sprintf("%s.rds", s)))
+        else {
+            if(skip.missing)
+                return(NULL)
+            else
+                stop(sprintf("File not found: %s", fname))
+        }
     })
     return(do.call(rbind, ret))
 }
@@ -54,11 +62,11 @@ add_missing_columns <- function(m, col.names, fill.data) {
 }
 
 
-load_clusters_data <- function(clusters, samples, dir.prefix) {
+load_clusters_data <- function(clusters, samples, dir.prefix, skip.missing = FALSE) {
     df <- data.frame(clusters, samples, stringsAsFactors = FALSE)
     
     ret <- plyr::dlply(df, ~samples, function(x) {
-        ret <- load_rds_data(x$clusters, file.path(dir.prefix, x$samples[1]))
+        ret <- load_rds_data(x$clusters, file.path(dir.prefix, x$samples[1]), skip.missing)
         ret$sample <- x$samples[1]
         return(ret)
     })
@@ -89,19 +97,23 @@ load_clusters_data <- function(clusters, samples, dir.prefix) {
 #'   take precedence over this (i.e. if the clusters are pooled, the samples will be pooled too, irrespective of the value of this option)
 #' @param samples.to.plot The samples to be plotted. This option is only used if \code{pool.samples == FALSE} and \code{G} does not have 
 #'   a \code{sample} vertex property (i.e. the vertices were generated using \code{scfeatures::cluster_fcs_files_groups}, and as such they represent
-#'   multiple samples). In such cases this option is mandatory. Otherwise, if the nodes (i.e. the clusters) represent single samples
+#'   multiple samples). In such cases, if this option is \code{NULL}, the pooled data is plotted, otherwise only data for the corresponding samples
+#'   is plotted. If instead the nodes (i.e. the clusters) represent single samples
 #'   the samples to be plotted are selected from the \code{sample} vertex property of the corresponding nodes
-#' @param facet.by In cases where multiple samples are plotted, whether the plots should be faceted by \code{"sample"} or by \code{"variable"}
+#' @param facet.by In cases where multiple samples are plotted, whether the plots should be faceted by \code{"Sample"} or by \code{"Variable"}
 #' 
 #' @return Returns a \code{ggplot2} plot object
 #' 
-plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.clusters = FALSE, pool.samples = FALSE, samples.to.plot = NULL, facet.by = "sample") {
+plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.clusters = FALSE, 
+                          pool.samples = FALSE, samples.to.plot = NULL, facet.by = "Sample") {
  
     cl.labels <- V(G)$Label[clusters]
     clusters.data <- NULL
-    
-    if(is.null(V(G)$sample) && is.null(samples.to.plot)) # Load the pooled data
+
+    if(is.null(V(G)$sample) && is.null(samples.to.plot)) { # Load the pooled data 
         clusters.data <- load_rds_data(cl.labels, file.path(working.dir, "clusters_data", "pooled"))
+        clusters.data$sample <- NULL
+    }
     else {
         samples <- NULL
         if(!is.null(V(G)$sample))
@@ -109,7 +121,7 @@ plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.c
         else
             samples <- rep(samples.to.plot, each = length(clusters))
         
-        clusters.data <- load_clusters_data(cl.labels, samples, file.path(working.dir, "clusters_data"))
+        clusters.data <- load_clusters_data(cl.labels, samples, file.path(working.dir, "clusters_data"), skip.missing = TRUE)
     }
     
     if(pool.samples)
@@ -156,7 +168,7 @@ plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.c
 }
 
 
-expression_plot <- function(tab, plot.type, facet.by = "sample") {
+expression_plot <- function(tab, plot.type, facet.by = "Sample") {
     # Add error message that you cannot subset density plots by sample
     p <- NULL
     
@@ -166,11 +178,11 @@ expression_plot <- function(tab, plot.type, facet.by = "sample") {
         tab$cellType <- as.factor(tab$cellType)
         
         if(plot.type == "Boxplot") {
-            if(facet.by == "sample")
+            if(facet.by == "Sample")
                 p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
                       + ggplot2::geom_boxplot()
                       + ggplot2::facet_wrap(~sample))
-            else if(facet.by == "variable")
+            else if(facet.by == "Variable")
                 p <- (ggplot2::ggplot(ggplot2::aes(x = sample, fill = cellType, y = value), data = tab) 
                       + ggplot2::geom_boxplot()
                       + ggplot2::facet_wrap(~variable))

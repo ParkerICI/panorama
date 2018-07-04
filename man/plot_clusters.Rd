@@ -6,7 +6,7 @@
 \usage{
 plot_clusters(G, clusters, col.names, working.dir, plot.type,
   pool.clusters = FALSE, pool.samples = FALSE, samples.to.plot = NULL,
-  facet.by = "sample")
+  facet.by = "Sample")
 }
 \arguments{
 \item{G}{An \code{igraph} graph object}
@@ -27,10 +27,11 @@ take precedence over this (i.e. if the clusters are pooled, the samples will be 
 
 \item{samples.to.plot}{The samples to be plotted. This option is only used if \code{pool.samples == FALSE} and \code{G} does not have 
 a \code{sample} vertex property (i.e. the vertices were generated using \code{scfeatures::cluster_fcs_files_groups}, and as such they represent
-multiple samples). In such cases this option is mandatory. Otherwise, if the nodes (i.e. the clusters) represent single samples
+multiple samples). In such cases, if this option is \code{NULL}, the pooled data is plotted, otherwise only data for the corresponding samples
+is plotted. If instead the nodes (i.e. the clusters) represent single samples
 the samples to be plotted are selected from the \code{sample} vertex property of the corresponding nodes}
 
-\item{facet.by}{In cases where multiple samples are plotted, whether the plots should be faceted by \code{"sample"} or by \code{"variable"}}
+\item{facet.by}{In cases where multiple samples are plotted, whether the plots should be faceted by \code{"Sample"} or by \code{"Variable"}}
 }
 \value{
 Returns a \code{ggplot2} plot object
