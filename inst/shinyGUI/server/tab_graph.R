@@ -357,15 +357,6 @@ observeEvent(input$graphui_toggle_cluster_labels, {
     }
 )
 
-
-#output$graphui_plot_title = renderPrint({
-#    if(!is.null(input$graphui_selected_cluster) && input$graphui_selected_cluster != "")
-#        sprintf("Plotting cluster %s", input$graphui_selected_cluster)
-#})
-
-
-
-
 observe({
     if(!is.null(input$graphui_reset_colors) && input$graphui_reset_colors != 0)
     {

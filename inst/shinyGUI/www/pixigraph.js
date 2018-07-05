@@ -127,7 +127,7 @@ class PixiGraph {
     static getNodeFillScale(nodes, visControl) {
         let ret = null
         console.log(visControl)
-        ret = d3.scale.linear()
+        ret = d3.scaleLinear()
                 .domain(visControl.colorScaleDomain)
                 .range(visControl.colorScaleRange)
 			    .interpolate(d3.interpolateLab)        
@@ -147,7 +147,7 @@ class PixiGraph {
         let v = nodes.filter(d => !d.type || d.type != "landmark")
 
         if (visControl.nodeSizeAttr != null) {
-            ret = d3.scale.linear()
+            ret = d3.scaleLinear()
                     .range([visControl.minNodeSize, visControl.maxNodeSize])
                     .domain(d3.extent(visControl.nodeSizeAttr))
         }
@@ -158,7 +158,11 @@ class PixiGraph {
     
     
     
-    
+    static colorToInt(color) {
+        let col = d3.rgb(color)
+        let ret = (col.r * 65536) + (col.g * 256) + col.b
+        return(ret)
+    }
     
     static getCircleTexture() {
         let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true })
@@ -291,9 +295,9 @@ class PixiGraph {
         }
     
         graphContainer.mousemove = e => {
-            let pos = e.data.getLocalPosition(graphContainer)
             
             if (isDragging) {
+                let pos = e.data.getLocalPosition(graphContainer)
                 let dx = pos.x - mouseDownX
                 let dy = pos.y - mouseDownY
                 
@@ -302,9 +306,11 @@ class PixiGraph {
                 graphContainer.updateTransform()
                 
                 prevX = pos.x; prevY = pos.y
+                renderer.render(graphContainer)
             }
             else if (isSelecting) {
                 clearCurrentSelection()
+                let pos = e.data.getLocalPosition(graphContainer)
                 let rectWidth = pos.x - mouseDownX
                 let rectHeight = pos.y - mouseDownY
 
@@ -331,9 +337,8 @@ class PixiGraph {
                         curSelNodesIdx.push(i)
                     }
                 })
+                renderer.render(graphContainer)
             }
-            renderer.render(graphContainer)
-
         }
         
         graphContainer.mouseup = e => {
@@ -392,7 +397,7 @@ class PixiGraph {
                 else if(visControl.nodeColorAttr[i] < domain[0])
                     col = parseInt(visControl.colorUnder.substr(1, 7), 16)
                 else
-                    col = parseInt(nodeFillScale(visControl.nodeColorAttr[i]).substr(1, 7), 16)
+                    col = PixiGraph.colorToInt(nodeFillScale(visControl.nodeColorAttr[i]))
             }
             
             sprite.tint = col
