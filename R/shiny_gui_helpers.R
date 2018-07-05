@@ -34,7 +34,7 @@ get_graph_centering_transform <- function(x, y, svg.width, svg.height) {
 
 get_summary_table <- function(sc.data, sel.graph, sel.nodes) {
     G <- sc.data$graphs[[sel.graph]]
-    col.names <- get_numeric_vertex_attributes(sc.data, sel.graph)
+    col.names <- get_numeric_vertex_attributes(sc.data)
     tab <- igraph::get.data.frame(G, what = "vertices")
     temp <-tab[tab$Label %in% sel.nodes,]
     ret <- temp[, col.names]    

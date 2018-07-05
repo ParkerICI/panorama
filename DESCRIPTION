@@ -9,15 +9,11 @@ LinkingTo: Rcpp
 Remotes:
     ParkerICI/scfeatures
 Imports:
-    Rcpp,
-    flowCore,
     ggplot2,
     igraph,
     plyr,
     reshape,
     shiny,
-    shinyjs,
-    scales,
     grDevices,
     jsonlite,
     DT,
