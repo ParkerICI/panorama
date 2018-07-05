@@ -6,14 +6,6 @@ visControl <- function(outputId) {
     HTML(paste("<div id=\"", outputId, "\" class=\"shiny-vis-control\"></div>", sep=""))
 }
 
-row <- function(...) {
-    tags$div(class="row", ...)
-}
-
-col <- function(width, ...) {
-    tags$div(class=paste0("span", width), ...)
-}
-
 
 render_graph_ui <- function(working.directory, ...) { renderUI({
 fluidPage(
@@ -357,12 +349,7 @@ observeEvent(input$graphui_toggle_cluster_labels, {
     }
 )
 
-observe({
-    if(!is.null(input$graphui_reset_colors) && input$graphui_reset_colors != 0)
-    {
-        #session$sendCustomMessage(type = "reset_colors", "none")
-    }
-})
+
 
 observe({
     if(!is.null(input$graphui_export_selected_clusters) && input$graphui_export_selected_clusters > 0)
@@ -375,32 +362,3 @@ observe({
 })
 
 
-
-
-
-observe({
-        display_edges <- input$graphui_display_edges
-        #session$sendCustomMessage(type = "toggle_display_edges", display_edges)
-})
-
-observe({
-    if(!is.null(input$graphui_toggle_cluster_labels) && input$graphui_toggle_cluster_labels != 0)
-    {
-        display <- ifelse(input$graphui_toggle_cluster_labels %% 2 == 0, "none", "")
-        #session$sendCustomMessage(type = "toggle_label", list(target = "cluster", display = display))
-    }
-})
-
-observe({
-    display <- tolower(input$graphui_node_size)
-    #session$sendCustomMessage(type = "toggle_node_size", list(display = display))
-})
-
-
-observe({
-    if(!is.null(input$graphui_toggle_node_size) && input$graphui_toggle_node_size != 0)
-    {
-        display <- ifelse(input$graphui_toggle_node_size %% 2 == 0, "proportional", "default")
-        #session$sendCustomMessage(type = "toggle_node_size", list(display = display))
-    }
-})

@@ -1,21 +1,5 @@
 
 
-
-rescale_size <- function(max.size, min.size, max.val, x)
-{
-    return(((max.size - min.size) * x) / max.val + min.size);
-}
-
-get_vertex_size <- function(G, figure.width, node.size.attr, min.node.size, max.node.size, landmark.node.size) {
-    size.attr <- igraph::get.vertex.attribute(G, node.size.attr)
-    ret <- size.attr / sum(size.attr, na.rm = T)
-    print("FIXMEEEEEEEEEE")
-    ret <- rescale_size(max.node.size, min.node.size, 0.7, ret)
-    ret[V(G)$type == "landmark"] <- landmark.node.size
-    return(ret)
-}
-
-
 get_sample_names <- function(G) {
     ret <- NULL
     
@@ -30,18 +14,7 @@ get_sample_names <- function(G) {
     return(unique(ret))
 }
 
-combine_marker_sample_name <- function(sel.marker, active.sample)
-{
-    if(active.sample == "All" || active.sample == "Absolute" || sel.marker == "Default")
-        return(sel.marker)
-    else
-        return(paste(sel.marker, active.sample, sep = "@"))
-    
-}
-
-
-get_graph_centering_transform <- function(x, y, svg.width, svg.height)
-{
+get_graph_centering_transform <- function(x, y, svg.width, svg.height) {
     padding <- 50
     G.width <- max(x) - min(x)
     G.height <- max(y) - min(y)
@@ -59,16 +32,7 @@ get_graph_centering_transform <- function(x, y, svg.width, svg.height)
     
 }
 
-get_graph_table <- function(sc.data, sel.graph)
-{
-    G <- sc.data$graphs[[sel.graph]]
-    ret <- igraph::get.data.frame(G, what = c("vertices"))
-    return(ret)
-}
-
-
-get_summary_table <- function(sc.data, sel.graph, sel.nodes)
-{
+get_summary_table <- function(sc.data, sel.graph, sel.nodes) {
     G <- sc.data$graphs[[sel.graph]]
     col.names <- get_numeric_vertex_attributes(sc.data, sel.graph)
     tab <- igraph::get.data.frame(G, what = "vertices")
@@ -84,8 +48,7 @@ get_summary_table <- function(sc.data, sel.graph, sel.nodes)
 }
 
 
-export_clusters <- function(working.dir, sel.graph, sel.nodes)
-{
+export_clusters <- function(working.dir, sel.graph, sel.nodes) {
     d <- gsub(".txt$", ".all_events.RData", sel.graph)
     d <- file.path(working.dir, d)
     d <- my_load(d)
@@ -155,71 +118,8 @@ graph_to_json <- function(G, sel.edges = NULL) {
 }
 
 
-get_limits_for_marker <- function(sc.data, sel.graph, active.sample, sel.marker, color.scaling)
-{
-    if(color.scaling == "local")
-    {
-        v <- combine_marker_sample_name()
-        
-    }
-    
-}
 
-get_color_for_marker <- function(sc.data, sel.marker, rel.to.sample, sel.graph, active.sample, color.scaling, 
-                                 stats.type, colors.to.interpolate, color.under, color.over, color.scale.limits = NULL, color.scale.mid = NULL)
-{
-    G <- sc.data$graphs[[sel.graph]]
-    if(sel.marker == "Default")
-    {
-        ret <- rep("#4F93DE", vcount(G))
-        ret[V(G)$type == "cluster"] <- "#FF7580"
-        return(list(color.vector = ret, color.scale.lim = NULL))
-    }
-    else
-    {
-        v <- igraph::get.vertex.attribute(G, combine_marker_sample_name(sel.marker, active.sample))
-        
-        f <- colorRamp(colors.to.interpolate, interpolate = "linear")
-        
-        if(rel.to.sample != "Absolute")
-        {
-            rel.to.marker <- combine_marker_sample_name(sel.marker, rel.to.sample)
-            if(stats.type == "Difference")
-                v <- v - (get.vertex.attribute(G, rel.to.marker))
-            else if(stats.type == "Ratio")
-                v <- v / (get.vertex.attribute(G, rel.to.marker))
-            v[is.infinite(v)] <- NA
-        }
-        color.scale.lim <- NULL
-        if(color.scaling == "local")
-            color.scale.lim <- list(min = min(v, na.rm = T), max = max(v, na.rm = T))
-        if(!is.null(color.scale.limits))
-        {
-            under <- v < color.scale.limits[1]
-            over <- v > color.scale.limits[2]
-            v[under] <- color.scale.limits[1]
-            v[over] <- color.scale.limits[2]
-            if(is.null(color.scale.mid))
-                v <-  scales::rescale(v)
-            else
-                v <- scales::rescale_mid(v, mid = color.scale.mid)
-            v <- f(v)
-            v <- apply(v, 1, function(x) {sprintf("rgb(%s)", paste(round(x), collapse = ","))})
-            v[under] <- sprintf("rgb(%s)", paste(col2rgb(color.under), collapse = ","))
-            v[over] <- sprintf("rgb(%s)", paste(col2rgb(color.over), collapse = ","))
-            
-        }
-        else
-        {
-            v <- f(scales::rescale(v)) #colorRamp needs an argument in the range [0, 1]
-            v <- apply(v, 1, function(x) {sprintf("rgb(%s)", paste(round(x), collapse = ","))})
-        }
-        return(list(color.vector = v, color.scale.lim = color.scale.lim))
-    }
-}
-
-get_numeric_vertex_attributes <- function(G)
-{
+get_numeric_vertex_attributes <- function(G) {
     d <- igraph::get.data.frame(G, what = "vertices")
     #Don't consider attributes which are only present in the landmarks
     d <- d[d$type == "cluster",]
@@ -230,8 +130,7 @@ get_numeric_vertex_attributes <- function(G)
     return(v[!(v %in% exclude)])
 }
 
-get_number_of_cells_per_landmark <- function(sc.data, sel.graph)
-{
+get_number_of_cells_per_landmark <- function(sc.data, sel.graph) {
     G <- sc.data$graphs[[sel.graph]]
     land <- V(G)[V(G)$type == "landmark"]$Label
     ee <- igraph::get.edgelist(G)
@@ -246,8 +145,7 @@ get_number_of_cells_per_landmark <- function(sc.data, sel.graph)
     return(dd)
 }
 
-get_fcs_col_names <- function(f.path)
-{
+get_fcs_col_names <- function(f.path) {
     fcs.file <- flowCore::read.FCS(f.path)
     params <- flowCore::pData(flowCore::parameters(fcs.file))
     ret <- as.vector(params$desc)
