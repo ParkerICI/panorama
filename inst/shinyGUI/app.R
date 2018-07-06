@@ -12,11 +12,9 @@ ui <- navbarPage("SCAFFoLD",
     tabPanel("Map exploration", 
              uiOutput("graphUI"),
              uiOutput("plotWindow"))
-    #tabPanel("Run SCAFFoLD Analysis", uiOutput("analysisUI")),
     #tabPanel("Map dataset", uiOutput("mappingUI")),
     #tabPanel("Unsupervised map", uiOutput("unsupervisedUI")),
-    #tabPanel("Run Citrus", uiOutput("citrusUI")),
-    #tabPanel("Edit SCAFFoLD file", uiOutput("editingUI"))
+    #tabPanel("Run Citrus", uiOutput("citrusUI"))
 )
 
 
