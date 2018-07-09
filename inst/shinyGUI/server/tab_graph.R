@@ -9,40 +9,45 @@ visControl <- function(outputId) {
 
 render_graph_ui <- function(working.directory, ...) { renderUI({
 fluidPage(
+    shinyjs::useShinyjs(),
     tags$head(tags$script(src = "mainwindow.js")),
     sidebarPanel(
-        selectInput("graphui_display_edges", "Display edges:", choices = c("All", "Highest scoring", "Inter cluster", "To landmark"), width = "100%"),
-        selectInput("graphui_node_color_attr", "Nodes color:", choices = c("Default"), width = "100%"),
+        selectInput("graphui_display_edges", "Display edges", choices = c("All", "Highest scoring", "Inter cluster", "To landmark"), width = "100%"),
+        selectInput("graphui_node_color_attr", "Nodes color", choices = c("Default"), width = "100%"),
         fluidRow(
                 column(6,
-                       selectInput("graphui_stats_type", "Stats type", choices = c("Ratio", "Difference"))
+                       selectInput("graphui_stats_type", "Stats type", choices = c("Absolute", "Ratio", "Difference"))
+                       
                 ),
                 column(6,
-                       selectInput("graphui_stats_relative_to", "Stats relative to:", choices = c("Absolute"), width = "100%")
+                       conditionalPanel(
+                           condition = "input.graphui_stats_type != 'Absolute'",
+                           selectInput("graphui_stats_relative_to", "Stats relative to:", choices = c(""), width = "100%")
+                       )
                 )
             ),
             
         selectInput("graphui_color_number", "Number of colors", choices = c(2,3)),
         fluidRow(
             column(6,
-                   colourpicker::colourInput("graphui_color_under", "Under:", value = "#FFFF00")
+                   colourpicker::colourInput("graphui_color_under", "Under", value = "#FFFF00")
             ),
             column(6,
-                   colourpicker::colourInput("graphui_color_over", "Over:", value = "#0000FF")
+                   colourpicker::colourInput("graphui_color_over", "Over", value = "#0000FF")
             )
         ),
         fluidRow(
             column(4,
-                   colourpicker::colourInput("graphui_color_min", "Min:", value = "#E7E7E7")
+                   colourpicker::colourInput("graphui_color_min", "Min", value = "#E7E7E7")
             ),
             column(4,
                    conditionalPanel(
                        condition = "input.graphui_color_number == 3",
-                       colourpicker::colourInput("graphui_color_mid", "Mid:", value = "#E7E7E7")
+                       colourpicker::colourInput("graphui_color_mid", "Mid", value = "#E7E7E7")
                    )
             ),
             column(4,
-                   colourpicker::colourInput("graphui_color_max", "Max:", value = "#E71601")
+                   colourpicker::colourInput("graphui_color_max", "Max", value = "#E71601")
             )
         ),
         conditionalPanel(
@@ -52,15 +57,15 @@ fluidPage(
         sliderInput("graphui_color_scale_lim", "Color scale limits", min = 0.0, max = 5.0, value = c(0.0, 5.0), round = -2, step = 0.1, sep = ""),
         fluidRow(
             column(6,
-                   numericInput("graphui_color_scale_min", "Color scale min:", 0)
+                   numericInput("graphui_color_scale_min", "Color scale min", 0)
             ),
             column(6,
-                   numericInput("graphui_color_scale_max", "Color scale max:", 5)
+                   numericInput("graphui_color_scale_max", "Color scale max", 5)
             )
         ),
         fluidRow(
             column(6,
-                   selectInput("graphui_node_size", "Nodes size:", choices = c("Proportional", "Default"), width = "100%")
+                   selectInput("graphui_node_size", "Nodes size", choices = c("Proportional", "Default"), width = "100%")
             ),
             column(6,
                    numericInput("graphui_min_node_size", "Minimum node size", 2, min = 0, max = 1000)
@@ -75,19 +80,28 @@ fluidPage(
             )
         ),
         fluidRow(
-            column(4, 
-                selectInput("graphui_plot_type", "Plot type:", choices = c("Density", "Boxplot", "Scatterplot"), width = "100%")
+            column(6, 
+                selectInput("graphui_plot_type", "Plot type", choices = c("Density", "Boxplot", "Scatterplot"), width = "100%")
             ),
-            column(4,
-                selectInput("graphui_facet_by", "Facet by:", choices = c("Sample", "Variable"), width = "100%")
-            ),
-            column(4, 
-                checkboxInput("graphui_pool_clusters_data", "Pool clusters data", value = FALSE),
-                checkboxInput("graphui_pool_samples_data", "Pool samples data", value = FALSE),
-                actionButton("graphui_plot_clusters", "Plot selected clusters")
+            column(6,
+                selectInput("graphui_facet_by", "Facet by", choices = c("Sample", "Variable"), width = "100%")
             )
         ),
-        selectInput("graphui_markers_to_plot", "Markers to plot in cluster view:", choices = c(""), multiple = T, width = "100%"),
+        fluidRow(
+            column(4, 
+                checkboxInput("graphui_pool_clusters_data", "Pool clusters data", value = FALSE)
+            ),
+            column(4,
+                conditionalPanel(
+                    condition = "!input.graphui_pool_clusters_data",
+                    checkboxInput("graphui_pool_samples_data", "Pool samples data", value = FALSE)
+                )
+            ),
+            column(4,
+                actionButton("graphui_plot_clusters", "Plot clusters")
+            )
+        ),
+        selectInput("graphui_markers_to_plot", "Markers to plot", choices = c(""), multiple = T, width = "100%"),
         selectizeInput("graphui_samples_to_plot", "Samples to plot", choices = c(""), multiple = T, width = "100%")
     ),
     
@@ -95,7 +109,7 @@ fluidPage(
     mainPanel(
         fluidRow(
             column(6,
-                selectizeInput("graphui_selected_graph", "Choose a graph:", choices = c("", list.files(path = working.directory, pattern = "*.graphml$")), width = "100%")
+                selectizeInput("graphui_selected_graph", "Choose a graph", choices = c("", list.files(path = working.directory, pattern = "*.graphml$")), width = "100%")
             ),
             column(6,
                 selectizeInput("graphui_active_sample", "Active sample", choices = c("All"), width = "100%")     
@@ -113,10 +127,10 @@ fluidPage(
                 actionButton("graphui_reset_graph_position", "Reset graph position")
             ),
             column(4,
-                actionButton("graphui_toggle_landmark_labels", "Toggle landmark labels")       
+                actionButton("graphui_toggle_cluster_labels", "Toggle cluster labels") 
             ),
             column(4,
-                actionButton("graphui_toggle_cluster_labels", "Toggle cluster labels") 
+                actionButton("graphui_toggle_landmark_labels", "Toggle landmark labels")       
             )
             #column(3,
             #    actionButton("graphui_export_selected_clusters", "Export selected clusters")
@@ -160,7 +174,7 @@ observe({
             updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
                                 selected = input$graphui_active_sample)
             updateSelectizeInput(session, "graphui_samples_to_plot", choices = sample.names)
-            updateSelectInput(session, "graphui_stats_relative_to", choices = c("Absolute", sample.names),
+            updateSelectInput(session, "graphui_stats_relative_to", choices = sample.names,
                                 selected = input$graphui_stats_relative_to)
         })
     }
@@ -215,7 +229,7 @@ get_node_color_attr <- reactive({
         
         ret <- igraph::get.vertex.attribute(G, x)
         
-        if(input$graphui_stats_relative_to != "Absolute") {
+        if(input$graphui_stats_type != "Absolute") {
             rel.to <- paste(input$graphui_node_color_attr, input$graphui_stats_relative_to, sep = "@")
             
             if(input$graphui_stats_type == "Difference")
@@ -361,4 +375,33 @@ observe({
     }
 })
 
+observe({
+    G <- get_graph()
+    if(!is.null(G)) {
+        if(is.null(igraph::V(G)$type) || length(unique(igraph::V(G)$type)) == 1) {
+            shinyjs::hide("graphui_display_edges")
+            shinyjs::hide("graphui_toggle_landmark_labels")
+        } 
+        else {
+            shinyjs::show("graphui_display_edges")
+            shinyjs::show("graphui_toggle_landmark_labels")
+        }    
+            
+        if(!any(grepl("@", igraph::list.vertex.attributes(G)))) {
+            shinyjs::hide("graphui_active_sample")
+            shinyjs::hide("graphui_stats_type")
+            shinyjs::hide("graphui_stats_relative_to")
+            shinyjs::hide("graphui_facet_by")
+            shinyjs::hide("graphui_pool_samples_data")
+            shinyjs::hide("graphui_samples_to_plot")
+        } else {
+            shinyjs::show("graphui_active_sample")
+            shinyjs::show("graphui_stats_type")
+            shinyjs::show("graphui_stats_relative_to")
+            shinyjs::show("graphui_facet_by")
+            shinyjs::show("graphui_pool_samples_data")
+            shinyjs::show("graphui_samples_to_plot")
+        }
+    }
+})
 
