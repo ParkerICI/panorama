@@ -159,7 +159,7 @@ get_graph <- reactive({
 observe({
     G <- get_graph()
     if(!is.null(G)) {
-        attrs <- scaffold2:::get_numeric_vertex_attributes(G)
+        attrs <- scaffold2:::get_vertex_attributes(G)
         
         isolate({
             sel.marker <- NULL
@@ -216,7 +216,7 @@ get_node_size_attr <- reactive({
 })
 
 get_node_color_attr <- reactive({
-    if(input$graphui_node_color_attr == "Default")
+    if(is.null(input$graphui_node_color_attr) || input$graphui_node_color_attr == "Default")
         return(NULL)
     else {
         x <- NULL
@@ -377,6 +377,7 @@ observe({
 
 observe({
     G <- get_graph()
+    node.color.attr <- get_node_color_attr()
     if(!is.null(G)) {
         if(is.null(igraph::V(G)$type) || length(unique(igraph::V(G)$type)) == 1) {
             shinyjs::hide("graphui_display_edges")
@@ -403,5 +404,32 @@ observe({
             shinyjs::show("graphui_samples_to_plot")
         }
     }
+    
+    if(!is.null(node.color.attr) && is.character(node.color.attr)) {
+        shinyjs::hide("graphui_color_number")
+        shinyjs::hide("graphui_color_mid")
+        shinyjs::hide("graphui_color_max")
+        shinyjs::hide("graphui_color_scale_mid")
+        shinyjs::hide("graphui_color_scale_lim")
+        shinyjs::hide("graphui_color_scale_min")
+        shinyjs::hide("graphui_color_scale_max")
+        shinyjs::hide("graphui_color_under")
+        shinyjs::hide("graphui_color_over")
+        shinyjs::hide("graphui_color_min")
+        
+    } else {
+        shinyjs::show("graphui_color_number")
+        shinyjs::show("graphui_color_mid")
+        shinyjs::show("graphui_color_max")
+        shinyjs::show("graphui_color_scale_mid")
+        shinyjs::show("graphui_color_scale_lim")
+        shinyjs::show("graphui_color_scale_min")
+        shinyjs::show("graphui_color_scale_max")
+        shinyjs::show("graphui_color_under")
+        shinyjs::show("graphui_color_over")
+        shinyjs::show("graphui_color_min")
+        
+    }
+
 })
 

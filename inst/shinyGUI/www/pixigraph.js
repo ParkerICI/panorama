@@ -3,12 +3,16 @@
 class PixiGraph {
     
     constructor(onNodeNewSelection, onNodeAddToSelection) {
-        this.renderer = new PIXI.WebGLRenderer({ antialias: true, interactive: true })
+ 
+        this.renderer = new PIXI.WebGLRenderer({ antialias: true, interactive: true })  
         //this.renderer.roundPixels = true
         this.renderer.backgroundColor = 0xFFFFFF
-
-        this.rootContainer = new PIXI.Container()
         
+        this.rootContainer = new PIXI.Container()
+        this.legendOverlay = new PIXI.Container()
+        this.rootContainer.addChild(this.legendOverlay)
+
+
         this.graphContainer = new PIXI.Container()
         this.nodeContainer = new PIXI.Container()
         this.edgeContainer = new PIXI.Container()
@@ -22,6 +26,7 @@ class PixiGraph {
         this.rootContainer.addChild(this.graphContainer)
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
         
+      
         this.circleTexture = PixiGraph.getCircleTexture()
 
         // This is used to make sure different graphs are always drawn in the same position
@@ -114,7 +119,7 @@ class PixiGraph {
                 fontSize = 24 
             }
             
-            label.style = {fontFamily : 'Arial', fontSize: fontSize, fill : 0x210E0F, align : 'left', strokeThickness:1}
+            label.style = {fontFamily: 'Arial', fontSize: fontSize, fill: 0x210E0F, align: 'left', strokeThickness: 1}
             label.position = new PIXI.Point(d.x, d.y)
             label.resolution = 2
 
@@ -127,10 +132,19 @@ class PixiGraph {
     static getNodeFillScale(nodes, visControl) {
         let ret = null
         console.log(visControl)
-        ret = d3.scaleLinear()
-                .domain(visControl.colorScaleDomain)
-                .range(visControl.colorScaleRange)
-			    .interpolate(d3.interpolateLab)        
+
+        if(visControl.nodeColorAttr != null && (typeof visControl.nodeColorAttr[0] == "string")) {
+            let s = new Set(visControl.nodeColorAttr)
+            ret = d3.scaleOrdinal()
+                    .domain(Array.from(s.values()))
+                    .range(d3.schemeSet3)
+        }
+        else
+            ret = d3.scaleLinear()
+                    .domain(visControl.colorScaleDomain)
+                    .range(visControl.colorScaleRange)
+			        .interpolate(d3.interpolateLab)        
+        
         return ret
     }
     
@@ -291,7 +305,7 @@ class PixiGraph {
                 isDragging = true
                 //edgeContainer.visible = false
             }
-            renderer.render(graphContainer)
+            renderer.render(this.rootContainer)
         }
     
         graphContainer.mousemove = e => {
@@ -306,7 +320,7 @@ class PixiGraph {
                 graphContainer.updateTransform()
                 
                 prevX = pos.x; prevY = pos.y
-                renderer.render(graphContainer)
+                renderer.render(this.rootContainer)
             }
             else if (isSelecting) {
                 clearCurrentSelection()
@@ -337,7 +351,7 @@ class PixiGraph {
                         curSelNodesIdx.push(i)
                     }
                 })
-                renderer.render(graphContainer)
+                renderer.render(this.rootContainer)
             }
         }
         
@@ -345,7 +359,7 @@ class PixiGraph {
 
             rectangleContainer.removeChildren()
             edgeContainer.visible = true
-            renderer.render(graphContainer)
+            renderer.render(this.rootContainer)
             if (isSelecting) {
                 this.onNodeNewSelection(curSelNodesIdx)
             }
@@ -357,6 +371,35 @@ class PixiGraph {
     resize(width, height) {
         this.renderer.resize(width, height)
         this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
+        this.renderer.render(this.rootContainer)
+    }
+
+    drawLegendOverlay(nodeFillScale) {
+        let domain = nodeFillScale.domain()
+        let yPadding = 10
+
+        domain.forEach((d, i) => {
+            let sprite = this.getCircleSprite()
+            let x = this.renderer.width * 0.02
+            let y = this.renderer.height * 0.03 * i + yPadding
+
+            sprite.x = x 
+            sprite.y = y
+            sprite.scale.x = 0.15
+            sprite.scale.y = 0.15
+            sprite.tint =  PixiGraph.colorToInt(nodeFillScale(d))
+
+            let label = new PIXI.Text(d)
+            label.style =  {fontFamily: 'Arial', fontSize: 12, fill: 0x210E0F, align: 'left', strokeThickness: 1}
+            label.position = new PIXI.Point(x + 20, y)
+            
+            this.legendOverlay.addChild(sprite)
+            this.legendOverlay.addChild(label)
+        })
+  
+      
+
+
     }
 
     draw(visControl) {
@@ -365,7 +408,11 @@ class PixiGraph {
         
         let nodeFillScale = PixiGraph.getNodeFillScale(this.data.nodes, visControl)
         let nodeSizeScale = PixiGraph.getNodeSizeScale(this.data.nodes, visControl)
-        
+        this.legendOverlay.removeChildren()
+
+        if(visControl.nodeColorAttr != null && (typeof visControl.nodeColorAttr[0] == "string"))
+            this.drawLegendOverlay(nodeFillScale)
+
         this.nodeContainer.children.forEach((sprite, i) => {            
             let node = this.data.nodes[i]
             let size = 0
