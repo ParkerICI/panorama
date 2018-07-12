@@ -23,7 +23,7 @@ ui <- navbarPage("SCAFFoLD",
 
 server <- function(input, output, session) {
     options(shiny.error=traceback)
-    app.dir <- file.path(system.file(package = "scaffold2"), "shinyGUI")
+    app.dir <- file.path(system.file(package = "panorama"), "shinyGUI")
     
     observe({
         

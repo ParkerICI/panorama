@@ -212,7 +212,7 @@ run_test <- function() {
     fname <- "group1.graphml"
     G <- igraph::read.graph(fname, format = "graphml")
                            
-    scaffold2:::plot_clusters(G,  c(20, 21 , 22), col.names = c("CD3", "CD45", "CD19", "CD14"), working.dir = "./", plot.type = "Boxplot", 
+    panorama:::plot_clusters(G,  c(20, 21 , 22), col.names = c("CD3", "CD45", "CD19", "CD14"), working.dir = "./", plot.type = "Boxplot", 
                               pool.clusters = F, pool.samples = F, samples.to.plot = c("101_3.fcs", "102_4.fcs"))
     
     

@@ -159,7 +159,7 @@ get_graph <- reactive({
 observe({
     G <- get_graph()
     if(!is.null(G)) {
-        attrs <- scaffold2:::get_vertex_attributes(G)
+        attrs <- panorama:::get_vertex_attributes(G)
         
         isolate({
             sel.marker <- NULL
@@ -170,7 +170,7 @@ observe({
             markers.for.plotting <- attrs[attrs != "popsize"]
             updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs), selected = sel.marker)
             updateSelectInput(session, "graphui_markers_to_plot", choices = markers.for.plotting, selected = markers.for.plotting)
-            sample.names <- scaffold2:::get_sample_names(G)
+            sample.names <- panorama:::get_sample_names(G)
             updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
                                 selected = input$graphui_active_sample)
             updateSelectizeInput(session, "graphui_samples_to_plot", choices = sample.names)
@@ -186,7 +186,7 @@ output$graphui_mainnet <- reactive({
     ret <- NULL
     
     if(!is.null(G)) 
-        ret <- scaffold2:::graph_to_json(G, input$graphui_display_edges)
+        ret <- panorama:::graph_to_json(G, input$graphui_display_edges)
     
     return(ret)
 })
@@ -300,11 +300,11 @@ observe({
 #    {
 #        if(is.null(input$graphui_selected_nodes) || length(input$graphui_selected_nodes) == 0)
 #        {
-#            scaffold2:::get_number_of_cells_per_landmark(scaffold_data(), input$graphui_selected_graph)     
+#            panorama:::get_number_of_cells_per_landmark(scaffold_data(), input$graphui_selected_graph)     
 #        }
 #        else
 #        {
-#            scaffold2:::get_summary_table(scaffold_data(), input$graphui_selected_graph, input$graphui_selected_nodes)
+#            panorama:::get_summary_table(scaffold_data(), input$graphui_selected_graph, input$graphui_selected_nodes)
 #        }
 #    }
 #}, options = list(scrollX = TRUE, searching = FALSE, scrollY = "800px", paging = FALSE, info = FALSE, processing = FALSE))
@@ -331,7 +331,7 @@ output$graphui_plot = renderPlot({
                     samples.to.plot <- input$graphui_samples_to_plot
                 }
 
-                p <- scaffold2:::plot_clusters(G, 
+                p <- panorama:::plot_clusters(G, 
                                     clusters = input$graphui_selected_nodes, 
                                     col.names = input$graphui_markers_to_plot,
                                     working.dir = working.directory,
@@ -370,7 +370,7 @@ observe({
     {
         isolate({
             if(!is.null(input$graphui_selected_nodes) && length(input$graphui_selected_nodes) >= 1)
-                scaffold2:::export_clusters(working.directory, input$graphui_selected_graph, input$graphui_selected_nodes)
+                panorama:::export_clusters(working.directory, input$graphui_selected_graph, input$graphui_selected_nodes)
         })
     }
 })

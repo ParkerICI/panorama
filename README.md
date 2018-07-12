@@ -8,16 +8,16 @@ SCAFFoLD
 install.packages("devtools")
 ```
 
-2. install `scaffold2` with the following command
+2. install `panorama` with the following command
 ```R
-devtools::install_github("ParkerICI/scaffold2")
+devtools::install_github("ParkerICI/panorama")
 ```
 
-This will install the `scaffold2` R package together with all the required dependencies. If evertyhing was successful you should be able to start the GUI with the following commands
+This will install the `panorama` R package together with all the required dependencies. If evertyhing was successful you should be able to start the GUI with the following commands
 
 ```R
-library(scaffold2)
-scaffold2()
+library(panorama)
+panorama()
 ```
 to stop the GUI simply hit the `ESC` key in your R session.
 
@@ -30,8 +30,8 @@ The working directory must contain all the `graphml` files you want to visualize
 If the `graphml` files were generated using the [scgraphs](https://github.com/ParkerICI/scgraphs) package these directories were generated for you as long as the `process.clusters.data` option was set to `TRUE` in `scgraphs::run_scaffold_analysis` or `scgraphs::get_unsupervised_graph_from_files` (please refer to the documentation of the `scgraphs` packages for details)
 
 Once the working directory has been selected two browser windows will be opened: a main window containing the graph visualization, and a separate plotting window. Please note the following, depending on your browser settings:
-- If your browser is configured to block pop-ups you need to allow pop-ups coming from the address `127.0.0.1:8072` (8072 is the default `scaffold2` port, you will have to enable pop-ups coming from a different port if you change this default)
-- If your browser is configured to open new windows in a new tab, the last tab shown in the browser will be the plotting window, which is initially empty. The main `scaffold2` interface will be in a different tab
+- If your browser is configured to block pop-ups you need to allow pop-ups coming from the address `127.0.0.1:8072` (8072 is the default `panorama` port, you will have to enable pop-ups coming from a different port if you change this default)
+- If your browser is configured to open new windows in a new tab, the last tab shown in the browser will be the plotting window, which is initially empty. The main `panorama` interface will be in a different tab
 
 ## Description of the GUI functionality
 

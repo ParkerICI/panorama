@@ -1,6 +1,6 @@
-#' scaffold2
+#' panorama
 #'
-#' @name scaffold2
+#' @name panorama
 #' @importFrom Rcpp sourceCpp
 #' @importFrom igraph V E V<-
 #' 
