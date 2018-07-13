@@ -1,6 +1,3 @@
-SCAFFoLD
-========
-
 # Installation
 
 1. Install the `devtools` package if you have not already
