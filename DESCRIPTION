@@ -1,6 +1,7 @@
 Package: panorama
-Title: SCAFFoLD
-Description: "Visualize and compare flow cytometry data"
+Title: Visualize and compare flow cytometry data
+Description: This package is an interactive GUI for visualizing and anlyzing
+    graphs representing single-cell data
 Version: 0.1.0
 Authors@R: "Pier Federico Gherardini <pfgherardini@parkerici.org> [aut, cre]"
 Depends:
