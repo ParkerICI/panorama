@@ -167,7 +167,7 @@ observe({
                 sel.marker <- input$graphui_node_color_attr
             else
                 sel.marker <- "Default"
-            markers.for.plotting <- attrs[attrs != "popsize"]
+            markers.for.plotting <- setdiff(panorama:::get_numeric_vertex_attributes(G), "popsize")
             updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs), selected = sel.marker)
             updateSelectInput(session, "graphui_markers_to_plot", choices = markers.for.plotting, selected = markers.for.plotting)
             sample.names <- panorama:::get_sample_names(G)

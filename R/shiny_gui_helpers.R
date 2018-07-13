@@ -123,11 +123,18 @@ get_vertex_attributes <- function(G) {
     d <- igraph::get.data.frame(G, what = "vertices")
     #Don't consider attributes which are only present in the landmarks
     d <- d[d$type == "cluster",]
-    #num <- sapply(d, function(x) {is.numeric(x) && !any(is.na(x))})
-    v <- igraph::list.vertex.attributes(G) #[num]
+    v <- names(d)
     v <- v[grep("@", v, invert = T)]
     exclude <- c("x", "y", "cellType", "type", "groups", "r", "g", "b", "size", "DNA1", "DNA2", "BC1", "BC2", "BC3", "BC4", "BC5", "BC6", "Time", "Cell_length", "Cisplatin", "beadDist", "highest_scoring_edge")
     return(v[!(v %in% exclude)])
+}
+
+get_numeric_vertex_attributes <- function(G) {
+    attrs <- get_vertex_attributes(G)
+    df <- igraph::get.data.frame(G, what = "vertices")
+    
+    num <- sapply(attrs, function(x) {is.numeric(df[, x])})
+    return(attrs[num])
 }
 
 get_number_of_cells_per_landmark <- function(sc.data, sel.graph) {
