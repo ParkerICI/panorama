@@ -24,7 +24,7 @@ class PixiGraph {
         this.graphContainer.addChild(this.nodeContainer)
         this.graphContainer.addChild(this.textContainer)
         this.rootContainer.addChild(this.graphContainer)
-        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
+        //this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
         
       
         this.circleTexture = PixiGraph.getCircleTexture()
@@ -42,6 +42,7 @@ class PixiGraph {
     set graphData(data) {
         this.data = data
 
+        
         let minX = d3.min(this.data.nodes, d => d.x)
         let minY = d3.min(this.data.nodes, d => d.y)
 
@@ -60,6 +61,11 @@ class PixiGraph {
             ret.y += yPadding 
             return(ret)
         })
+
+        let maxX = d3.max(this.data.nodes, d => d.x)
+        let maxY = d3.max(this.data.nodes, d => d.y)
+
+        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, Math.ceil(maxX + (maxX * 0.1)), Math.ceil(maxY + (maxY * 0.1)))
 
         this.data.edges = this.data.edges.map(d => {
             let ret = d
@@ -370,7 +376,7 @@ class PixiGraph {
 
     resize(width, height) {
         this.renderer.resize(width, height)
-        this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
+        //this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
         this.renderer.render(this.rootContainer)
     }
 

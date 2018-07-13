@@ -246,14 +246,6 @@ get_node_color_attr <- reactive({
 
 
 
-
-
-observe({
-    print("###")
-    print(input$graphui_selected_nodes)
-    
-})
-
 output$graphui_viscontrol <- reactive({
     # Taking this dependency here is necessary because 
     # chaging the viscontrol object is what triggers the re-rendering. Without this
@@ -432,4 +424,13 @@ observe({
     }
 
 })
+
+
+#observe({
+#    print("###")
+#    print(input$graphui_selected_nodes)
+#    
+#})
+
+
 

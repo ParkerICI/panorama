@@ -1,5 +1,5 @@
 
-ui <- navbarPage("SCAFFoLD",
+ui <- navbarPage("",
     header = list(tags$head(tags$script(src = "d3-scale.min.js")),
         tags$head(tags$script(src = "d3-interpolate.min.js")),
         tags$head(tags$script(src = "d3-array.min.js")),
@@ -11,7 +11,7 @@ ui <- navbarPage("SCAFFoLD",
         tags$head(tags$script(src = "shinyoutputbindings.js")),
         singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'graph.css')))
     ),
-    tabPanel("Map exploration", 
+    tabPanel("panorama", 
              uiOutput("graphUI"),
              uiOutput("plotWindow"))
     #tabPanel("Map dataset", uiOutput("mappingUI")),
