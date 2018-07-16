@@ -335,10 +335,10 @@ output$graphui_plot = renderPlot({
                 G <- get_graph()
                 
                 samples.to.plot <- NULL
-                if(length(input$graphui_samples_to_plot) > 0) {
+                if(length(input$graphui_samples_to_plot) > 0 || panorama:::graph_type(G) == "multiple") {
                     if(input$graphui_plot_type == "Density" && !input$graphui_pool_samples_data) {
                         showModal(modalDialog(
-                            "If you are plotting data for individual samples you cannot use Density plots",
+                            "Cannot display Density plots with sample-specific data",
                             "Please either select Boxplot, or pool samples data",
                             easyClose = TRUE
                         ))

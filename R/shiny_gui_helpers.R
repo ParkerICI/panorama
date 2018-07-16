@@ -142,7 +142,8 @@ get_vertex_attributes <- function(G) {
     d <- d[d$type == "cluster",]
     v <- names(d)
     v <- v[grep("@", v, invert = T)]
-    exclude <- c("x", "y", "cellType", "type", "groups", "r", "g", "b", "size", "DNA1", "DNA2", "BC1", "BC2", "BC3", "BC4", "BC5", "BC6", "Time", "Cell_length", "Cisplatin", "beadDist", "highest_scoring_edge")
+    exclude <- c("x", "y", "cellType", "type", "groups", "r", "g", "b", "size", "DNA1", "DNA2", "BC1", "BC2", "BC3", "BC4", "BC5", "BC6", "Time", 
+                 "Cell_length", "Event_length", "Cisplatin", "beadDist", "highest_scoring_edge")
     return(v[!(v %in% exclude)])
 }
 

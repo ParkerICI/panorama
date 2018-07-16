@@ -185,21 +185,25 @@ expression_plot <- function(tab, plot.type, facet.by = "Sample") {
         
         else if(plot.type == "Boxplot") 
             p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
-                  + ggplot2::geom_boxplot())
+                  + ggplot2::geom_boxplot()
+                  + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)))
     } else {
         tab <- reshape::melt(tab, id.vars = c("cellType", "sample"))
         tab$variable <- as.factor(tab$variable)
         tab$cellType <- as.factor(tab$cellType)
+        tab$sample <- stringr::str_wrap(tab$sample, 20)
         
         if(plot.type == "Boxplot") {
             if(facet.by == "Sample")
                 p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
                       + ggplot2::geom_boxplot()
-                      + ggplot2::facet_wrap(~sample))
+                      + ggplot2::facet_wrap(~sample)
+                      + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)))
             else if(facet.by == "Variable")
                 p <- (ggplot2::ggplot(ggplot2::aes(x = sample, fill = cellType, y = value), data = tab) 
                       + ggplot2::geom_boxplot()
-                      + ggplot2::facet_wrap(~variable))
+                      + ggplot2::facet_wrap(~variable)
+                      + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)))
         } else
             message("Cannot do density plot for multiple samples")
         

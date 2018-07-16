@@ -16,6 +16,7 @@ Imports:
     jsonlite,
     DT,
     colourpicker,
-    shinyjs
+    shinyjs,
+    stringr
 LazyData: true
 RoxygenNote: 6.0.1
