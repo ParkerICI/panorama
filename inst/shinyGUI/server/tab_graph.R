@@ -101,7 +101,25 @@ fluidPage(
                 actionButton("graphui_plot_clusters", "Plot clusters")
             )
         ),
-        selectInput("graphui_markers_to_plot", "Markers to plot", choices = c(""), multiple = T, width = "100%"),
+        conditionalPanel(
+            condition = "input.graphui_plot_type == 'Scatterplot'",
+            fluidRow(
+                column(6,
+                       selectInput("graphui_x_axis", "X axis", choices = "", width = "100%")
+                ),
+                column(6,
+                       selectInput("graphui_y_axis", "Y axis", choices = "", width = "100%")
+                )
+            )
+        ),
+        conditionalPanel(
+            condition = "input.graphui_plot_type != 'Scatterplot'",
+            fluidRow(
+                column(12,
+                    selectInput("graphui_markers_to_plot", "Markers to plot", choices = c(""), multiple = T, width = "100%")
+                )
+            )
+        ),
         selectizeInput("graphui_samples_to_plot", "Samples to plot", choices = c(""), multiple = T, width = "100%")
     ),
     
@@ -170,6 +188,8 @@ observe({
             markers.for.plotting <- setdiff(panorama:::get_numeric_vertex_attributes(G), "popsize")
             updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs), selected = sel.marker)
             updateSelectInput(session, "graphui_markers_to_plot", choices = markers.for.plotting, selected = markers.for.plotting)
+            updateSelectInput(session, "graphui_x_axis", choices = markers.for.plotting)
+            updateSelectInput(session, "graphui_y_axis", choices = markers.for.plotting)
             sample.names <- panorama:::get_sample_names(G)
             updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
                                 selected = input$graphui_active_sample)
@@ -305,10 +325,14 @@ output$graphui_plot = renderPlot({
     p <- NULL
     if(!is.null(input$graphui_plot_clusters) && input$graphui_plot_clusters != 0) {
         isolate({
-            col.names <- input$graphui_markers_to_plot
-            if((length(col.names) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
+            markers.to.plot <- NULL
+            if(input$graphui_plot_type == "Scatterplot")
+                markers.to.plot = c(input$graphui_x_axis, input$graphui_y_axis)
+            else
+                markers.to.plot <- input$graphui_markers_to_plot
+            
+            if((length(markers.to.plot) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
                 G <- get_graph()
-                
                 
                 samples.to.plot <- NULL
                 if(length(input$graphui_samples_to_plot) > 0) {
@@ -325,7 +349,7 @@ output$graphui_plot = renderPlot({
 
                 p <- panorama:::plot_clusters(G, 
                                     clusters = input$graphui_selected_nodes, 
-                                    col.names = input$graphui_markers_to_plot,
+                                    col.names = markers.to.plot,
                                     working.dir = working.directory,
                                     plot.type = input$graphui_plot_type,
                                     pool.clusters = input$graphui_pool_clusters_data,
@@ -380,20 +404,28 @@ observe({
             shinyjs::show("graphui_toggle_landmark_labels")
         }    
             
-        if(!any(grepl("@", igraph::list.vertex.attributes(G)))) {
-            shinyjs::hide("graphui_active_sample")
-            shinyjs::hide("graphui_stats_type")
-            shinyjs::hide("graphui_stats_relative_to")
-            shinyjs::hide("graphui_facet_by")
-            shinyjs::hide("graphui_pool_samples_data")
-            shinyjs::hide("graphui_samples_to_plot")
-        } else {
+        graph.type <- panorama:::graph_type(G)
+        if(graph.type == "pooled") {
             shinyjs::show("graphui_active_sample")
             shinyjs::show("graphui_stats_type")
             shinyjs::show("graphui_stats_relative_to")
+            shinyjs::show("graphui_samples_to_plot")
             shinyjs::show("graphui_facet_by")
             shinyjs::show("graphui_pool_samples_data")
-            shinyjs::show("graphui_samples_to_plot")
+        } else {
+            shinyjs::hide("graphui_active_sample")
+            shinyjs::hide("graphui_stats_type")
+            shinyjs::hide("graphui_stats_relative_to")
+            shinyjs::hide("graphui_samples_to_plot")
+            print(graph.type)
+            if(graph.type == "multiple") {
+                shinyjs::show("graphui_facet_by")
+                shinyjs::show("graphui_pool_samples_data")
+            } else {
+                shinyjs::hide("graphui_facet_by")
+                shinyjs::hide("graphui_pool_samples_data")
+            }
+
         }
     }
     

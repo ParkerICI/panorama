@@ -118,7 +118,24 @@ graph_to_json <- function(G, sel.edges = NULL) {
 }
 
 
+graph_type <- function(G) {
+    if(any(grepl("@", igraph::list.vertex.attributes(G)))) {
+        return("pooled")
+    } else {
+        df <- igraph::get.data.frame(G, what = "vertices")
+        if(!is.null(df$type))
+            df <- df[df$type == "cluster",]
 
+        if(!is.null(df$sample) && length(unique(df$sample)) > 1)
+            return("multiple")
+        else
+            return("single")
+        
+    }    
+}
+    
+    
+    
 get_vertex_attributes <- function(G) {
     d <- igraph::get.data.frame(G, what = "vertices")
     #Don't consider attributes which are only present in the landmarks

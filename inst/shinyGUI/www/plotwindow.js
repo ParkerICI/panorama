@@ -1,7 +1,7 @@
 function plot_receive(ev) {
     if (ev.key != 'current_plot') return // ignore other keys
     let msgData = ev.oldValue
-
+    
     if(msgData) {
         let imgDiv = document.getElementById("plotOutput")
         

@@ -172,7 +172,21 @@ expression_plot <- function(tab, plot.type, facet.by = "Sample") {
     # Add error message that you cannot subset density plots by sample
     p <- NULL
     
-    if(!is.null(tab$sample)) {
+    if(is.null(tab$sample) || length(unique(tab$sample)) == 1) {
+        tab$sample <- NULL
+        tab <- reshape::melt(tab, id.vars = "cellType")
+        tab$variable <- as.factor(tab$variable)
+        tab$cellType <- as.factor(tab$cellType)
+        
+        if(plot.type == "Density")
+            p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = tab) 
+                  + ggplot2::geom_density() 
+                  + ggplot2::facet_wrap(~variable, scales = "free"))
+        
+        else if(plot.type == "Boxplot") 
+            p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
+                  + ggplot2::geom_boxplot())
+    } else {
         tab <- reshape::melt(tab, id.vars = c("cellType", "sample"))
         tab$variable <- as.factor(tab$variable)
         tab$cellType <- as.factor(tab$cellType)
@@ -186,23 +200,11 @@ expression_plot <- function(tab, plot.type, facet.by = "Sample") {
                 p <- (ggplot2::ggplot(ggplot2::aes(x = sample, fill = cellType, y = value), data = tab) 
                       + ggplot2::geom_boxplot()
                       + ggplot2::facet_wrap(~variable))
-        }
+        } else
+            message("Cannot do density plot for multiple samples")
         
     }
-    else {
-        tab <- reshape::melt(tab, id.vars = "cellType")
-        tab$variable <- as.factor(tab$variable)
-        tab$cellType <- as.factor(tab$cellType)
-        
-        if(plot.type == "Density")
-            p <- (ggplot2::ggplot(ggplot2::aes(x = value, color = cellType), data = tab) 
-                  + ggplot2::geom_density() 
-                  + ggplot2::facet_wrap(~variable, scales = "free"))
-        
-        else if(plot.type == "Boxplot") 
-            p <- (ggplot2::ggplot(ggplot2::aes(x = variable, fill = cellType, y = value), data = tab) 
-                  + ggplot2::geom_boxplot())
-    }
+
     
     return(p)
 }
