@@ -14,24 +14,47 @@ plot_communities <- function(G, att.names, ...) {
 
 
 
-density_scatterplot <- function(tab, x_name, y_name, grouping) {
-    m <- plyr::ddply(tab, grouping, function(m, x_name, y_name) {
-        colramp <- grDevices::colorRampPalette(c("black", "red", "yellow"))
-        dens.col <- grDevices::densCols(m[, x_name], m[, y_name], colramp = colramp)
-        return(data.frame(m, dens.col = dens.col))
-    }, x_name = x_name, y_name = y_name)
+density_scatterplot <- function(tab, x.name, y.name, facet.by = NULL) {
+
+    tab$cellType <- as.factor(tab$cellType)
+    maxx <- max(tab[, x.name], na.rm = T) + 0.5
+    maxy <- max(tab[, y.name], na.rm = T) + 0.5
+
     
-    maxx <- max(m[, x_name], na.rm = T) + 0.5
-    maxy <- max(m[, y_name], na.rm = T) + 0.5
+    if(is.null(tab$sample) || length(unique(tab$sample)) == 1) {
+        m <- plyr::ddply(tab, ~cellType, function(m, x.name, y.name) {
+            colramp <- grDevices::colorRampPalette(c("black", "red", "yellow"))
+            dens.col <- grDevices::densCols(m[, x.name], m[, y.name], colramp = colramp)
+            return(data.frame(m, dens.col = dens.col, check.names = FALSE))
+        }, x.name = x.name, y.name = y.name)
+        
+        (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.name, y = y.name, color = "dens.col", size = 1), data = m)
+                + ggplot2::facet_wrap(~cellType)
+                + ggplot2::geom_point()
+                + ggplot2::scale_colour_identity() 
+                + ggplot2::scale_size_identity()
+                + ggplot2::xlim(0, maxx)
+                + ggplot2::ylim(0, maxy)
+        )
+    } else {
+        if(facet.by == "Cluster")
+            (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.name, y = y.name, size = 1, colour = "sample"), data = tab)
+                    + ggplot2::facet_wrap(~cellType)
+                    + ggplot2::geom_point()
+                    + ggplot2::scale_size_identity()
+                    + ggplot2::xlim(0, maxx)
+                    + ggplot2::ylim(0, maxy)
+             )
+        else if(facet.by == "Sample")
+            (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.name, y = y.name, size = 1, colour = "cellType"), data = tab)
+                    + ggplot2::facet_wrap(~sample)
+                    + ggplot2::geom_point()
+                    + ggplot2::scale_size_identity()
+                    + ggplot2::xlim(0, maxx)
+                    + ggplot2::ylim(0, maxy)
+            )
+    }
     
-    (p <- ggplot2::ggplot(ggplot2::aes_string(x = x_name, y = y_name, color = "dens.col", size = 1), data = m)
-            + ggplot2::facet_wrap(grouping)
-            + ggplot2::geom_point()
-            + ggplot2::scale_colour_identity() 
-            + ggplot2::scale_size_identity()
-            + ggplot2::xlim(0, maxx)
-            + ggplot2::ylim(0, maxy)
-    )
     
     return(p)
 }
@@ -154,10 +177,12 @@ plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.c
 
     temp <- rbind(clusters.data, landmarks.data)
     
+
+    
     p <- NULL
     
     if(plot.type == "Scatterplot")
-        p <- density_scatterplot(temp, x_name = col.names[1], y_name = col.names[2], grouping = "cellType")
+        p <- density_scatterplot(temp, x.name = col.names[1], y.name = col.names[2], facet.by)
     else 
         p <- expression_plot(temp, plot.type, facet.by)
 

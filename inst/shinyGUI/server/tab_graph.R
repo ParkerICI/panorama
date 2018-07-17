@@ -356,7 +356,18 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
                             easyClose = TRUE
                         ))
                         return(p)
+                    } else if(input$graphui_plot_type == "Scatterplot" && 
+                            !is.null(igraph::V(G)$sample) &&
+                            length(unique(igraph::V(G)$sample)) > 1 &&
+                            !input$graphui_pool_clusters_data) {
+                        showModal(modalDialog(
+                            "This graph was derived from multiple independent clustering runs.",
+                            "Scatterplots can only be displayed by pooling clusters data",
+                            easyClose = TRUE
+                        ))
+                        return(p)
                     }
+                    
                     samples.to.plot <- input$graphui_samples_to_plot
                 }
             
@@ -397,11 +408,21 @@ observeEvent(input$graphui_toggle_cluster_labels, {
 
 
 observe({
-    if(!is.null(input$graphui_export_selected_clusters) && input$graphui_export_selected_clusters > 0)
-    {
+    if(!is.null(input$graphui_export_selected_clusters) && input$graphui_export_selected_clusters > 0) {
         isolate({
             if(!is.null(input$graphui_selected_nodes) && length(input$graphui_selected_nodes) >= 1)
                 panorama:::export_clusters(working.directory, input$graphui_selected_graph, input$graphui_selected_nodes)
+        })
+    }
+})
+
+observe({
+    if(!is.null(input$graphui_plot_type)) {
+        isolate({
+            if(input$graphui_plot_type == "Scatterplot")
+                updateSelectInput(session, "graphui_facet_by", choices = c("Sample", "Cluster"))
+            else
+                updateSelectInput(session, "graphui_facet_by", choices = c("Sample", "Variable"))
         })
     }
 })
