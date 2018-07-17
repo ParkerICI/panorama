@@ -25,7 +25,7 @@ ui <- navbarPage("",
 server <- function(input, output, session) {
     options(shiny.error=traceback)
     app.dir <- file.path(system.file(package = "panorama"), "shinyGUI")
-    session$onSessionEnded(stopApp)
+    # session$onSessionEnded(stopApp)
     
     observe({
         

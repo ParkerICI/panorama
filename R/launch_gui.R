@@ -10,6 +10,7 @@ panorama <- function(working.dir = NULL, ...) {
         args$port <- 8072
     
     args$appDir <- file.path(system.file(package = "panorama"), "shinyGUI")
+    args$launch.browser <- TRUE
     
     do.call(shiny::runApp, args)
 }

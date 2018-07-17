@@ -93,8 +93,7 @@ load_clusters_data <- function(clusters, samples, dir.prefix, skip.missing = FAL
 #'   is only necessary if \code{G} contains nodes of type \code{landmark} (i.e. it represents a Scaffold map)
 #' @param plot.type Either \code{"Boxplot"} or \code{"Scatterplot"}. The type of plot
 #' @param pool.clusters Whether to pool the clusters data. If this is \code{FALSE} each cluster is plotted separately
-#' @param pool.samples Whether to pool data from different samples. If this is \code{FALSE} each sample is plotted separately. Note that \code{pool.clusters}
-#'   take precedence over this (i.e. if the clusters are pooled, the samples will be pooled too, irrespective of the value of this option)
+#' @param pool.samples Whether to pool data from different samples. If this is \code{FALSE} each sample is plotted separately
 #' @param samples.to.plot The samples to be plotted. This option is only used if \code{pool.samples == FALSE} and \code{G} does not have 
 #'   a \code{sample} vertex property (i.e. the vertices were generated using \code{scfeatures::cluster_fcs_files_groups}, and as such they represent
 #'   multiple samples). In such cases, if this option is \code{NULL}, the pooled data is plotted, otherwise only data for the corresponding samples
@@ -127,10 +126,8 @@ plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.c
     if(pool.samples)
         clusters.data$sample <- NULL
     
-    if(pool.clusters) {
+    if(pool.clusters) 
         clusters.data$cellType <- "Clusters"
-        clusters.data$sample <- NULL
-    }
     
     temp <- clusters.data[, c(col.names, "cellType")]
     if(!is.null(clusters.data$sample))

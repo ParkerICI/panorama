@@ -22,8 +22,7 @@ is only necessary if \code{G} contains nodes of type \code{landmark} (i.e. it re
 
 \item{pool.clusters}{Whether to pool the clusters data. If this is \code{FALSE} each cluster is plotted separately}
 
-\item{pool.samples}{Whether to pool data from different samples. If this is \code{FALSE} each sample is plotted separately. Note that \code{pool.clusters}
-take precedence over this (i.e. if the clusters are pooled, the samples will be pooled too, irrespective of the value of this option)}
+\item{pool.samples}{Whether to pool data from different samples. If this is \code{FALSE} each sample is plotted separately}
 
 \item{samples.to.plot}{The samples to be plotted. This option is only used if \code{pool.samples == FALSE} and \code{G} does not have 
 a \code{sample} vertex property (i.e. the vertices were generated using \code{scfeatures::cluster_fcs_files_groups}, and as such they represent

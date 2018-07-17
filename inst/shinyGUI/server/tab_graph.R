@@ -92,10 +92,7 @@ fluidPage(
                 checkboxInput("graphui_pool_clusters_data", "Pool clusters data", value = FALSE)
             ),
             column(4,
-                conditionalPanel(
-                    condition = "!input.graphui_pool_clusters_data",
-                    checkboxInput("graphui_pool_samples_data", "Pool samples data", value = FALSE)
-                )
+                checkboxInput("graphui_pool_samples_data", "Pool samples data", value = FALSE)
             ),
             column(4,
                 actionButton("graphui_plot_clusters", 
