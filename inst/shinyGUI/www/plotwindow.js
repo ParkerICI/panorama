@@ -17,6 +17,5 @@ function plot_receive(ev) {
 }
 
 
-
 //Watch for modifications to the local storage and load the plot from it
-window.addEventListener("storage", function(ev) {plot_receive(ev);}); 
+window.addEventListener("storage", ev => plot_receive(ev)) 

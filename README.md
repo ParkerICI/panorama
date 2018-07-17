@@ -79,7 +79,7 @@ One of the most useful ways to inspect a cluster is to plot the expression value
 - **Pool samples data**: only available if the graph represents data from multiple samples and **Pool clusters data** is not selected. Whether to pool the data from multiple samples for plotting.
 - **Markers to plot**: Select which markers you want to display in the plot.
 - **Samples to plot**: only available if the graph represents data from multiple samples. If this is left empty, the pooled data is plotted, otherwise only the data from the specified samples
-- **Plot clusters**: plot the selected clusters. The plots appear in the separate plotting window
+- **Plot clusters**: plot the selected clusters. A spinner animation will appear in this button while the plot is loading. The plots appear in the separate plotting window
 
 
 

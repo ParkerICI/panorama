@@ -98,7 +98,10 @@ fluidPage(
                 )
             ),
             column(4,
-                actionButton("graphui_plot_clusters", "Plot clusters")
+                actionButton("graphui_plot_clusters", 
+                    tagList(tags$div(id = "graphui_plot_clusters_text", "Plot clusters"), tags$div(id = "graphui_plot_clusters_spinner", class = "spinner", style = "visibility: hidden")),
+                    style = "position: relative"
+                )
             )
         ),
         conditionalPanel(
@@ -171,6 +174,17 @@ get_graph <- reactive({
         return(NULL)
     }
     
+})
+
+get_selected_nodes <- reactive({
+    sel <- input$graphui_selected_nodes
+    G <- get_graph()
+    
+    if(!is.null(igraph::V(G)$type)) {
+        type <- igraph::V(G)$type[sel]
+        sel <- sel[type == "cluster"]
+    }
+    return(sel)
 })
 
 
@@ -321,6 +335,8 @@ observe({
 #    }
 #}, options = list(scrollX = TRUE, searching = FALSE, scrollY = "800px", paging = FALSE, info = FALSE, processing = FALSE))
 
+
+
 output$graphui_plot = renderPlot({
     p <- NULL
     if(!is.null(input$graphui_plot_clusters) && input$graphui_plot_clusters != 0) {
@@ -346,9 +362,11 @@ output$graphui_plot = renderPlot({
                     }
                     samples.to.plot <- input$graphui_samples_to_plot
                 }
+            
+                session$sendCustomMessage(type = "plot_loading", "none")
 
                 p <- panorama:::plot_clusters(G, 
-                                    clusters = input$graphui_selected_nodes, 
+                                    clusters = get_selected_nodes(),
                                     col.names = markers.to.plot,
                                     working.dir = working.directory,
                                     plot.type = input$graphui_plot_type,
@@ -417,7 +435,7 @@ observe({
             shinyjs::hide("graphui_stats_type")
             shinyjs::hide("graphui_stats_relative_to")
             shinyjs::hide("graphui_samples_to_plot")
-            print(graph.type)
+
             if(graph.type == "multiple") {
                 shinyjs::show("graphui_facet_by")
                 shinyjs::show("graphui_pool_samples_data")

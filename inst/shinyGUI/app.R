@@ -9,6 +9,7 @@ ui <- navbarPage("",
         tags$head(tags$script(src = "pixi.min.js")),
         tags$head(tags$script(src = "pixigraph.js")),
         tags$head(tags$script(src = "shinyoutputbindings.js")),
+        singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'spinner.css'))),
         singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'graph.css')))
     ),
     tabPanel("panorama", 
@@ -24,6 +25,7 @@ ui <- navbarPage("",
 server <- function(input, output, session) {
     options(shiny.error=traceback)
     app.dir <- file.path(system.file(package = "panorama"), "shinyGUI")
+    session$onSessionEnded(stopApp)
     
     observe({
         

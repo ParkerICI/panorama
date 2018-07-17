@@ -93,6 +93,14 @@ Shiny.addCustomMessageHandler("toggle_cluster_labels",
 )
 
 
+Shiny.addCustomMessageHandler("plot_loading",
+    value => {
+        document.getElementById("graphui_plot_clusters_spinner").style.visibility = "visible"
+        document.getElementById("graphui_plot_clusters_text").style.visibility = "hidden"
+    }
+)
+
+
 ///////
 
 
