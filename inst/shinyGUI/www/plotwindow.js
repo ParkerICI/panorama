@@ -11,6 +11,8 @@ function plot_receive(ev) {
         let img = document.createElement('img')
         img.id = "plotWindow_plot"
         img.setAttribute("src", msgData)
+        img.style.width = "100%"
+        img.style.height = "auto"
         
         imgDiv.appendChild(img)
     }

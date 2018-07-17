@@ -334,7 +334,7 @@ observe({
 
 
 
-output$graphui_plot = renderPlot({
+output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
     p <- NULL
     if(!is.null(input$graphui_plot_clusters) && input$graphui_plot_clusters != 0) {
         isolate({
