@@ -445,12 +445,15 @@ class PixiGraph {
             }
             else {
                 let domain = visControl.colorScaleDomain
-                if(visControl.nodeColorAttr[i] > domain[domain.length - 1])
-                    col = parseInt(visControl.colorOver.substr(1, 7), 16)
-                else if(visControl.nodeColorAttr[i] < domain[0])
-                    col = parseInt(visControl.colorUnder.substr(1, 7), 16)
-                else
-                    col = PixiGraph.colorToInt(nodeFillScale(visControl.nodeColorAttr[i]))
+                let attr = visControl.nodeColorAttr[i]
+                col = PixiGraph.colorToInt(nodeFillScale(attr))
+                
+                if(typeof attr != "string") {
+                    if(attr > domain[domain.length - 1])
+                        col = parseInt(visControl.colorOver.substr(1, 7), 16)
+                    else if(attr < domain[0])
+                        col = parseInt(visControl.colorUnder.substr(1, 7), 16)
+                }
             }
             
             sprite.tint = col

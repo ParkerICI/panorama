@@ -344,7 +344,7 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
             else
                 markers.to.plot <- input$graphui_markers_to_plot
             
-            if((length(markers.to.plot) >= 1) && (length(input$graphui_selected_nodes) > 0)) {
+            if(length(markers.to.plot) >= 1) {
                 G <- get_graph()
                 
                 samples.to.plot <- NULL
@@ -371,23 +371,29 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
                     samples.to.plot <- input$graphui_samples_to_plot
                 }
             
-                session$sendCustomMessage(type = "plot_loading", "none")
-
-                p <- panorama:::plot_clusters(G, 
-                                    clusters = get_selected_nodes(),
-                                    col.names = markers.to.plot,
-                                    working.dir = working.directory,
-                                    plot.type = input$graphui_plot_type,
-                                    pool.clusters = input$graphui_pool_clusters_data,
-                                    pool.samples = input$graphui_pool_samples_data,
-                                    samples.to.plot = samples.to.plot,
-                                    facet.by = input$graphui_facet_by
-                )
+                
+                if(input$graphui_plot_type == "Communities") {
+                    session$sendCustomMessage(type = "plot_loading", "none")
+                    p <- panorama:::plot_communities(G, markers.to.plot)
+                }
+                else if(length(input$graphui_selected_nodes) > 0) {
+                    session$sendCustomMessage(type = "plot_loading", "none")
+                    p <- panorama:::plot_clusters(G, 
+                                        clusters = get_selected_nodes(),
+                                        col.names = markers.to.plot,
+                                        working.dir = working.directory,
+                                        plot.type = input$graphui_plot_type,
+                                        pool.clusters = input$graphui_pool_clusters_data,
+                                        pool.samples = input$graphui_pool_samples_data,
+                                        samples.to.plot = samples.to.plot,
+                                        facet.by = input$graphui_facet_by
+                    )
+                }
             }
                 
         })
     }
-    print(p)
+    return(p)
 })
 
 observeEvent(input$graphui_reset_graph_position, {
@@ -414,6 +420,12 @@ observe({
                 panorama:::export_clusters(working.directory, input$graphui_selected_graph, input$graphui_selected_nodes)
         })
     }
+})
+
+observe({
+    G <- get_graph()
+    if(!is.null(G) && !is.null(igraph::V(G)$community_id))
+        updateSelectInput(session, "graphui_plot_type", choices = c("Density", "Boxplot", "Scatteplot", "Communities"))
 })
 
 observe({
