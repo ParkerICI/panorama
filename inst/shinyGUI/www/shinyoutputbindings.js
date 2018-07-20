@@ -44,8 +44,8 @@ class NetworkOutputBinding extends Shiny.OutputBinding {
         this.pixiGraph.toggleLandmarkLabels()
     }
 
-    toggleClusterLabels() {
-        this.pixiGraph.toggleClusterLabels()
+    toggleClusterLabels(value) {
+        this.pixiGraph.toggleClusterLabels(value)
     }
 }
 
@@ -89,7 +89,16 @@ Shiny.addCustomMessageHandler("toggle_landmark_labels",
 )
 
 Shiny.addCustomMessageHandler("toggle_cluster_labels",
-    value => networkOutputBinding.toggleClusterLabels()
+    value => {
+        if(value == "none")
+            value = null
+        // Switch to 0-based indexing 
+        else if(typeof value == "number")
+            value = [value - 1] 
+        else
+            value = value.map(x => x - 1)
+        networkOutputBinding.toggleClusterLabels(value)
+    }
 )
 
 

@@ -127,6 +127,7 @@ class PixiGraph {
             
             label.style = {fontFamily: 'Arial', fontSize: fontSize, fill: 0x210E0F, align: 'left', strokeThickness: 1}
             label.position = new PIXI.Point(d.x, d.y)
+            label.anchor = new PIXI.Point(0, 0.5)
             label.resolution = 2
 
             this.textContainer.addChild(label)
@@ -220,12 +221,20 @@ class PixiGraph {
         this.renderer.render(this.rootContainer)
     }
 
-    toggleClusterLabels() {
-        this.textContainer.children.forEach((d, i) => {
-            let node = this.data.nodes[i]
-            if(!node.type || node.type == "cluster")
-                d.visible = !d.visible
-        })
+    toggleClusterLabels(selectedNodes) {
+        if(selectedNodes == null || selectedNodes.length == 0)
+            this.textContainer.children.forEach((d, i) => {
+                let node = this.data.nodes[i]
+                if(!node.type || node.type == "cluster")
+                    d.visible = !d.visible
+            })
+        else
+            selectedNodes.forEach(i => {
+                console.log(i)
+                let label = this.textContainer.children[i]
+                label.visible = !label.visible
+            })
+
         this.renderer.render(this.rootContainer)
     }
 

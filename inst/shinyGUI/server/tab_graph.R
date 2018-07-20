@@ -356,15 +356,22 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
                             easyClose = TRUE
                         ))
                         return(p)
-                    } else if(input$graphui_plot_type == "Scatterplot" && 
-                            !is.null(igraph::V(G)$sample) &&
-                            length(unique(igraph::V(G)$sample)) > 1 &&
-                            !input$graphui_pool_clusters_data) {
-                        showModal(modalDialog(
-                            "This graph was derived from multiple independent clustering runs.",
-                            "Scatterplots can only be displayed by pooling clusters data",
-                            easyClose = TRUE
-                        ))
+                    } else if(!is.null(igraph::V(G)$sample) && length(unique(igraph::V(G)$sample)) > 1) {
+                        if(input$graphui_plot_type == "Scatterplot" && 
+                           !input$graphui_pool_clusters_data)
+                            showModal(modalDialog(
+                                "This graph was derived from multiple independent clustering runs.",
+                                "Scatterplots can only be displayed by pooling clusters data",
+                                easyClose = TRUE
+                            ))
+                        if(input$graphui_pool_samples_data)
+                            showModal(modalDialog(
+                                "This graph was derived from multiple independent clustering runs.",
+                                "Data from different samples cannot be pooled",
+                                easyClose = TRUE
+                            ))
+                            
+                        #Add some sort of warning that it doesn't make sense to pool samples data for unsupervised clusters
                         return(p)
                     }
                     
@@ -397,18 +404,23 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
 })
 
 observeEvent(input$graphui_reset_graph_position, {
-        session$sendCustomMessage(type = "reset_graph_position", "none")
+        session$sendCustomMessage(type = "reset_graph_position", message = "none")
     }
 )
 
 observeEvent(input$graphui_toggle_landmark_labels, {
-        session$sendCustomMessage(type = "toggle_landmark_labels", "none")
+        session$sendCustomMessage(type = "toggle_landmark_labels", message = "none")
     }
 )
 
-observeEvent(input$graphui_toggle_cluster_labels, {
-        session$sendCustomMessage(type = "toggle_cluster_labels", "none")
-    }
+observeEvent(input$graphui_toggle_cluster_labels, 
+    isolate({
+        if(is.null(input$graphui_selected_nodes))
+            sel.nodes <- "none"
+        else
+            sel.nodes <- input$graphui_selected_nodes
+        session$sendCustomMessage(type = "toggle_cluster_labels", message = sel.nodes)
+    })
 )
 
 
