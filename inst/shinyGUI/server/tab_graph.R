@@ -358,21 +358,22 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
                         return(p)
                     } else if(!is.null(igraph::V(G)$sample) && length(unique(igraph::V(G)$sample)) > 1) {
                         if(input$graphui_plot_type == "Scatterplot" && 
-                           !input$graphui_pool_clusters_data)
+                           !input$graphui_pool_clusters_data) {
                             showModal(modalDialog(
                                 "This graph was derived from multiple independent clustering runs.",
                                 "Scatterplots can only be displayed by pooling clusters data",
                                 easyClose = TRUE
                             ))
-                        if(input$graphui_pool_samples_data)
+                            return(p)
+                        }
+                        else if(input$graphui_pool_samples_data) {
                             showModal(modalDialog(
                                 "This graph was derived from multiple independent clustering runs.",
                                 "Data from different samples cannot be pooled",
                                 easyClose = TRUE
                             ))
-                            
-                        #Add some sort of warning that it doesn't make sense to pool samples data for unsupervised clusters
-                        return(p)
+                            return(p)
+                        }
                     }
                     
                     samples.to.plot <- input$graphui_samples_to_plot
