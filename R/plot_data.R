@@ -128,12 +128,15 @@ load_clusters_data <- function(clusters, samples, dir.prefix, skip.missing = FAL
 #' 
 plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.clusters = FALSE, 
                           pool.samples = FALSE, samples.to.plot = NULL, facet.by = "Sample") {
- 
+    if(!dir.exists(file.path(working.dir, "clusters_data")))
+        stop("clusters_data directory is missing, data cannot be plotted")
+    
     cl.labels <- V(G)$Label[clusters]
     clusters.data <- NULL
 
-    if(is.null(V(G)$sample) && is.null(samples.to.plot)) { # Load the pooled data 
-        clusters.data <- load_rds_data(cl.labels, file.path(working.dir, "clusters_data", "pooled"))
+    if(is.null(V(G)$sample) && is.null(samples.to.plot)) { # Load the pooled data
+        pooled.data.dir <- tools::file_path_sans_ext(igraph::get.graph.attribute(G, "fname"))
+        clusters.data <- load_rds_data(cl.labels, file.path(working.dir, "clusters_data", "pooled", pooled.data.dir))
         clusters.data$sample <- NULL
     }
     else {

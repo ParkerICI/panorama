@@ -68,15 +68,15 @@ fluidPage(
                    selectInput("graphui_node_size", "Nodes size", choices = c("Proportional", "Default"), width = "100%")
             ),
             column(6,
-                   numericInput("graphui_min_node_size", "Minimum node size", 2, min = 0, max = 1000)
+                   numericInput("graphui_min_node_size", "Minimum node size", 5, min = 0, max = 1000)
             )
         ),
         fluidRow(
             column(6,
-                   numericInput("graphui_max_node_size", "Maximum node size", 80, min = 0, max = 1000)
+                   numericInput("graphui_max_node_size", "Maximum node size", 60, min = 0, max = 1000)
             ),
             column(6,
-                   numericInput("graphui_landmark_node_size", "Landmark node size", 40, min = 0, max = 1000)
+                   numericInput("graphui_landmark_node_size", "Landmark node size", 20, min = 0, max = 1000)
             )
         ),
         fluidRow(
@@ -202,8 +202,7 @@ observe({
             updateSelectInput(session, "graphui_x_axis", choices = markers.for.plotting)
             updateSelectInput(session, "graphui_y_axis", choices = markers.for.plotting)
             sample.names <- panorama:::get_sample_names(G)
-            updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names),
-                                selected = input$graphui_active_sample)
+            updateSelectInput(session, "graphui_active_sample", choices = c("All", sample.names))
             updateSelectizeInput(session, "graphui_samples_to_plot", choices = sample.names)
             updateSelectInput(session, "graphui_stats_relative_to", choices = sample.names,
                                 selected = input$graphui_stats_relative_to)
@@ -366,10 +365,10 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
                             ))
                             return(p)
                         }
-                        else if(input$graphui_pool_samples_data) {
+                        else if(input$graphui_pool_samples_data && !input$graphui_pool_clusters_data) {
                             showModal(modalDialog(
                                 "This graph was derived from multiple independent clustering runs.",
-                                "Data from different samples cannot be pooled",
+                                "Data from different samples cannot be pooled, unless you also pool the clusters data",
                                 easyClose = TRUE
                             ))
                             return(p)
@@ -386,7 +385,7 @@ output$graphui_plot = renderPlot(width = 1200, height = 800, expr = {
                 }
                 else if(length(input$graphui_selected_nodes) > 0) {
                     session$sendCustomMessage(type = "plot_loading", "none")
-                    p <- panorama:::plot_clusters(G, 
+                    p <- panorama:::plot_clusters(G,
                                         clusters = get_selected_nodes(),
                                         col.names = markers.to.plot,
                                         working.dir = working.directory,

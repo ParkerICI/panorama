@@ -122,7 +122,7 @@ class PixiGraph {
             
             if(d.type && d.type == "landmark") {
                 label.visible = true
-                fontSize = 24 
+                fontSize = 16 
             }
             
             label.style = {fontFamily: 'Arial', fontSize: fontSize, fill: 0x210E0F, align: 'left', strokeThickness: 1}
