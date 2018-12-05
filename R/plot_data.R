@@ -93,7 +93,7 @@ load_clusters_data <- function(clusters, samples, dir.prefix, skip.missing = FAL
         ret$sample <- x$samples[1]
         return(ret)
     })
-    
+
     return(do.call(rbind, ret))
     
     
@@ -133,7 +133,7 @@ plot_clusters <- function(G, clusters, col.names, working.dir, plot.type, pool.c
     
     cl.labels <- V(G)$Label[clusters]
     clusters.data <- NULL
-
+    
     if(is.null(V(G)$sample) && is.null(samples.to.plot)) { # Load the pooled data
         pooled.data.dir <- tools::file_path_sans_ext(igraph::get.graph.attribute(G, "fname"))
         clusters.data <- load_rds_data(cl.labels, file.path(working.dir, "clusters_data", "pooled", pooled.data.dir))

@@ -312,7 +312,9 @@ output$graphui_viscontrol <- reactive({
 
 
 observe({
-    updateSliderInput(session, "graphui_color_scale_lim", min = input$graphui_color_scale_min,
+    if(!is.null(input$graphui_color_scale_min) &&
+       !is.null(input$graphui_color_scale_max))
+        updateSliderInput(session, "graphui_color_scale_lim", min = input$graphui_color_scale_min,
                           max = input$graphui_color_scale_max)
 })
 
