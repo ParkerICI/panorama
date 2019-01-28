@@ -120,7 +120,8 @@ fluidPage(
                 )
             )
         ),
-        selectizeInput("graphui_samples_to_plot", "Samples to plot", choices = c(""), multiple = T, width = "100%")
+        selectizeInput("graphui_samples_to_plot", "Samples to plot", choices = c(""), multiple = T, width = "100%"),
+        actionButton("graphui_load_timeseries_data", "Load timeseries data")
     ),
     
     
@@ -163,6 +164,9 @@ fluidPage(
 
 })}
 
+
+graphui.reactive.values <- reactiveValues(timeseries.file = NULL)
+
 get_graph <- reactive({
     if(!is.null(input$graphui_selected_graph) && input$graphui_selected_graph != "") {
         G <- igraph::read.graph(file.path(working.directory, input$graphui_selected_graph), format = "graphml")
@@ -197,7 +201,7 @@ observe({
             else
                 sel.marker <- "Default"
             markers.for.plotting <- setdiff(panorama:::get_numeric_vertex_attributes(G), "popsize")
-            updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs), selected = sel.marker)
+            updateSelectInput(session, "graphui_node_color_attr", choices = c("Default", attrs, "Timeseries"), selected = sel.marker)
             updateSelectInput(session, "graphui_markers_to_plot", choices = markers.for.plotting, selected = markers.for.plotting)
             updateSelectInput(session, "graphui_x_axis", choices = markers.for.plotting)
             updateSelectInput(session, "graphui_y_axis", choices = markers.for.plotting)
@@ -248,6 +252,9 @@ get_node_size_attr <- reactive({
 get_node_color_attr <- reactive({
     if(is.null(input$graphui_node_color_attr) || input$graphui_node_color_attr == "Default")
         return(NULL)
+    else if(!is.null(input$graphui_node_color_attr) && 
+            input$graphui_node_color_attr == "Timeseries")
+        return(input$graphui_node_color_attr)
     else {
         x <- NULL
         if(input$graphui_active_sample == "All")
@@ -275,6 +282,28 @@ get_node_color_attr <- reactive({
 })
 
 
+observeEvent(input$graphui_load_timeseries_data, {
+    f <- file.choose()
+    graphui.reactive.values$timeseries.file <- f
+    
+}, ignoreInit = TRUE)
+
+get_timseries_data <- reactive({
+    tab <- NULL
+    
+    if(!is.null(graphui.reactive.values$timeseries.file)) {
+        tab <- read.table(graphui.reactive.values$timeseries.file, sep = "\t", header = TRUE,
+                          stringsAsFactors = FALSE, check.names = FALSE)
+        
+        row.names(tab) <- tab$Label
+        tab$Label <- NULL
+        tab <- data.frame(t(tab))
+        tab <- as.list(tab)
+    }
+    return(tab)
+    
+    
+})
 
 output$graphui_viscontrol <- reactive({
     # Taking this dependency here is necessary because 
@@ -306,7 +335,8 @@ output$graphui_viscontrol <- reactive({
         colorOver = input$graphui_color_over,
         colorScaleRange = colorScaleRange,
         colorScaleDomain = colorScaleDomain,
-        landmarkNodeSize = input$graphui_landmark_node_size
+        landmarkNodeSize = input$graphui_landmark_node_size,
+        timeseriesData = get_timseries_data()
     ))
 })
 

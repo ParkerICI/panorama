@@ -15,6 +15,7 @@ class PixiGraph {
 
         this.graphContainer = new PIXI.Container()
         this.nodeContainer = new PIXI.Container()
+        this.pieContainer = new PIXI.Container()
         this.edgeContainer = new PIXI.Container()
         this.textContainer = new PIXI.Container()
         this.graphContainer.interactive = true
@@ -22,6 +23,7 @@ class PixiGraph {
         
         this.graphContainer.addChild(this.edgeContainer)
         this.graphContainer.addChild(this.nodeContainer)
+        this.graphContainer.addChild(this.pieContainer)
         this.graphContainer.addChild(this.textContainer)
         this.rootContainer.addChild(this.graphContainer)
         //this.graphContainer.hitArea = new PIXI.Rectangle(0, 0, this.renderer.width, this.renderer.height)
@@ -178,6 +180,32 @@ class PixiGraph {
     }
     
     
+
+    static createPieSlice(x, y, height, theta) {
+        let triangle = new PIXI.Graphics()
+        triangle.beginFill(0xFFFFFF, 1)
+        triangle.lineStyle(0, 0x000000, 1)
+        triangle.moveTo(x, y)
+        triangle.lineTo(x + height, y)
+        triangle.arc(x, y, height, 0, theta * Math.PI/180)
+        triangle.endFill();
+        return(triangle)
+
+    }
+
+    static getPieSliceSprite(theta) {
+        let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true })
+        renderer.backgroundColor = 0xFFFFFF
+        let triangle = this.createPieSlice(50, 0, 50, theta)
+
+        let container = new PIXI.Container()
+        container.addChild(triangle)
+        renderer.render(container)
+        let texture = PIXI.Texture.fromCanvas(renderer.view)
+        let sprite = new PIXI.Sprite(texture)
+        sprite.anchor.set(0.5, 0)
+        return(sprite)
+    }
     
     static colorToInt(color) {
         let col = d3.rgb(color)
@@ -417,7 +445,70 @@ class PixiGraph {
 
     }
 
+    static getColorPie(v, colorScale) {
+        let angle = 360 / v.length
+        let container = new PIXI.Container()
+
+
+        v.forEach((d, i) => {
+            let sprite = PixiGraph.getPieSliceSprite(angle)
+            sprite.tint = PixiGraph.colorToInt(colorScale(d))
+            sprite.x = 50
+            sprite.y = 50
+            sprite.rotation = i * angle * (Math.PI / 180)
+            container.addChild(sprite)
+        })
+        container.pivot.x = 50
+        container.pivot.y = 50
+
+        return(container)
+    }
+
+    drawPies(visControl) {
+        if(!this.data)
+            return
+
+        console.log(this.data)
+
+        this.nodeContainer.visible = false
+        this.pieContainer.visible = true
+        let allValues = Object.values(visControl.timeseriesData).flat()
+        console.log(allValues)
+        console.log(d3.extent(allValues))
+
+        let colorScale = d3.scaleLinear()
+            .domain([d3.min(allValues), 1, d3.max(allValues)])
+            .range(["#2166ac", "#f7f7f7", "#b2182b"])
+        
+        this.nodeContainer.children.forEach((sprite, i) => {
+            let v = visControl.timeseriesData[this.data.nodes[i].Label]
+            if(v) {
+                let pie = PixiGraph.getColorPie(v, colorScale)
+                pie.x = sprite.x
+                pie.y = sprite.y
+                let size = 0.8 * visControl.landmarkNodeSize
+                pie.scale.x = 0.005 * size
+                pie.scale.y = 0.005 * size
+                this.pieContainer.addChild(pie)
+            }
+        })
+    }
+
     draw(visControl) {
+        if(!this.data)
+            return
+        
+        if (visControl.nodeColorAttr == "Timeseries")
+            this.drawPies(visControl)
+        else
+            this.drawGraph(visControl)
+
+        this.renderer.render(this.rootContainer)
+
+
+    }
+
+    drawGraph(visControl) {
         if(!this.data)
             return
         
@@ -472,7 +563,7 @@ class PixiGraph {
         if (visControl.selectedNodesIdx && visControl.selectedNodesIdx.length) 
             visControl.selectedNodesIdx.forEach(i => nodeContainer.getChildAt(i).tint = 0xFF0000)
         
-        this.renderer.render(this.rootContainer)
+        
     }
     
 }
