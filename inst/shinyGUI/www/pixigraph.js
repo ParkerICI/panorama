@@ -489,6 +489,7 @@ class PixiGraph {
                 let size = 0.8 * visControl.landmarkNodeSize
                 pie.scale.x = 0.005 * size
                 pie.scale.y = 0.005 * size
+                pie.rotation = 270 * (Math.PI / 180)
                 this.pieContainer.addChild(pie)
             }
         })
