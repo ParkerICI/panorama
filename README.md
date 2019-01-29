@@ -66,10 +66,11 @@ The appearence of the graph can be modified with the following controls:
 - **Color scale max**: the maximum value available in the **Color scale limits** slider
 - **Nodes size**: select whether you want the size of the nodes to be constant (Default) or Proportional to the number of cells in each cluster. 
 - **Minimum / Maximum / Landmark node size**: the minimum and maximum size for the cluster and the size of the landmark (red) nodes
+- **Load timeseries data**: use this button to select a file of timeseries data that will be visualized on the graph. Each cluster will be represented as a pie, with each slice corresponding to a different timepoint. The file with timeseries data should be a tab-delimited table with each row corresponding to a node in the graph (excluding landmark nodes if the graph is a Scaffold map) and each column containing the values for a specific timepoint. The first column will be mapped to the first slice in the pie (starting at twelve o'clock), the second column to the second slice and so on. The timeseries data file must also contain column headers (any header will work). The color scale goes from blue to red, with white representing the midpoint associated with the value `1`. In order to activate this visualization, select `Timeseries` from the `Nodes color` dropdown after loading the data.
 - **Reset graph position**: this button will reset the graph to its initial position, which is intended to display most of the nodes in a single image
 - **Toggle landmark labels**: toggle the display of the landmark labels on/off
 - **Toggle cluster labels**: toggle the display of the cluster labels on/off. If any nodes are selected, this only applies to the selected nodes
-- **Export selected clusters**: click this button to export the events in the selected clusters in a separate FCS file. For this to work, the original RData files corresponding to the clustered files in use must be located in the working directory. A new FCS file will be created in the working directory, with a name starting with *scaffold_export*, and ending with a random string of alpha-numeric characters, to prevent naming conflicts.
+
 
 One of the most useful ways to inspect a cluster is to plot the expression values for the cells that comprise the cluster. The controls below allow you to control the appeareance of the plot. Only data for the clusters that have been selected will be plotted. If the graph represents a Scaffold map, the plot will also include the data for the landmarks that are connected to the selected clusters
 
@@ -80,7 +81,7 @@ One of the most useful ways to inspect a cluster is to plot the expression value
 - **Markers to plot**: Select which markers you want to display in the plot.
 - **Samples to plot**: only available if the graph represents data from multiple samples. If this is left empty, the pooled data is plotted, otherwise only the data from the specified samples
 - **Plot clusters**: plot the selected clusters. A spinner animation will appear in this button while the plot is loading. The plots appear in the separate plotting window
-- **Load timeseries data**: use this button to select a file of timeseries data that will be visualized on the graph. Each cluster will be represented as a pie, with each slice corresponding to a different timepoint. The file with timeseries data should be a tab-delimited table with each row corresponding to a node in the graph (excluding landmark nodes if the graph is a Scaffold map) and each column containing the values for a specific timepoint. The first column will be mapped to the first slice in the pie (starting at twelve o'clock), the second column to the second slice and so on. The timeseries data file must also contain column headers (any header will work). The color scale goes from blue to red, with white representing the midpoint associated with the value `1`. In order to activate this visualization, select `Timeseries` from the `Nodes color` dropdown after loading the data.
+
 
 
 
