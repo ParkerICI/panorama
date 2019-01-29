@@ -121,7 +121,11 @@ fluidPage(
             )
         ),
         selectizeInput("graphui_samples_to_plot", "Samples to plot", choices = c(""), multiple = T, width = "100%"),
-        actionButton("graphui_load_timeseries_data", "Load timeseries data")
+        actionButton("graphui_load_timeseries_data", "Load timeseries data"),
+        shinyjs::hidden(div(id = "graphui_timeseries_file",
+            p("Timeseries data file"),
+            verbatimTextOutput("graphui_timeseries_file_name")
+        ))
     ),
     
     
@@ -284,9 +288,12 @@ get_node_color_attr <- reactive({
 
 observeEvent(input$graphui_load_timeseries_data, {
     f <- file.choose()
+    shinyjs::show("graphui_timeseries_file")
     graphui.reactive.values$timeseries.file <- f
     
 }, ignoreInit = TRUE)
+
+output$graphui_timeseries_file_name <- renderText(graphui.reactive.values$timeseries.file)
 
 get_timseries_data <- reactive({
     tab <- NULL
@@ -308,7 +315,7 @@ get_timseries_data <- reactive({
 output$graphui_viscontrol <- reactive({
     # Taking this dependency here is necessary because 
     # chaging the viscontrol object is what triggers the re-rendering. Without this
-    # the scene would not rendered when a different graph is selected, or when
+    # the scene would not render when a different graph is selected, or when
     # the edges to display are changed
     
     input$graphui_selected_graph
@@ -316,6 +323,7 @@ output$graphui_viscontrol <- reactive({
     
     colorScaleDomain <- NULL
     colorScaleRange <- NULL
+    
     
     if(input$graphui_color_number == 2) {
         colorScaleRange <- c(input$graphui_color_min, input$graphui_color_max)
@@ -326,10 +334,21 @@ output$graphui_viscontrol <- reactive({
         colorScaleDomain <- c(input$graphui_color_scale_lim[1], input$graphui_color_scale_mid, input$graphui_color_scale_lim[2])
     }
 
+    nodeColorAttr <- get_node_color_attr()
+    timeseriesData <- get_timseries_data()
+    
+    if(!is.null(nodeColorAttr) && length(nodeColorAttr) == 1 && nodeColorAttr == "Timeseries") {
+        if(is.null(timeseriesData)) 
+            showModal(modalDialog(
+                "Please load timeseries data",
+                easyClose = TRUE
+            ))
+    }
+    
     return(list(
         minNodeSize = input$graphui_min_node_size,
         maxNodeSize = input$graphui_max_node_size,
-        nodeColorAttr = get_node_color_attr(),
+        nodeColorAttr = nodeColorAttr,
         nodeSizeAttr = get_node_size_attr(),
         colorUnder = input$graphui_color_under,
         colorOver = input$graphui_color_over,

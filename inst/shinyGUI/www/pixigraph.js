@@ -193,7 +193,8 @@ class PixiGraph {
 
     }
 
-    static getPieSliceSprite(theta) {
+
+    static getPieSliceTexture(theta) {
         let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true })
         renderer.backgroundColor = 0xFFFFFF
         let triangle = this.createPieSlice(50, 0, 50, theta)
@@ -201,7 +202,10 @@ class PixiGraph {
         let container = new PIXI.Container()
         container.addChild(triangle)
         renderer.render(container)
-        let texture = PIXI.Texture.fromCanvas(renderer.view)
+        return(PIXI.Texture.fromCanvas(renderer.view))
+    }
+
+    static getPieSliceSprite(texture) {
         let sprite = new PIXI.Sprite(texture)
         sprite.anchor.set(0.5, 0)
         return(sprite)
@@ -448,10 +452,11 @@ class PixiGraph {
     static getColorPie(v, colorScale) {
         let angle = 360 / v.length
         let container = new PIXI.Container()
+        let texture = PixiGraph.getPieSliceTexture(angle)
 
 
         v.forEach((d, i) => {
-            let sprite = PixiGraph.getPieSliceSprite(angle)
+            let sprite = PixiGraph.getPieSliceSprite(texture)
             sprite.tint = PixiGraph.colorToInt(colorScale(d))
             sprite.x = 50
             sprite.y = 50
@@ -464,21 +469,28 @@ class PixiGraph {
         return(container)
     }
 
+    getNodeSize(nodeIdx, visControl, nodeSizeScale) {
+        let size = 0
+        let node = this.data.nodes[nodeIdx]
+        if(node.type && node.type == "landmark")
+            size = visControl.landmarkNodeSize
+        else {
+            if(visControl.nodeSizeAttr == null)
+                size = 0.8 * visControl.landmarkNodeSize
+            else
+                size = nodeSizeScale(visControl.nodeSizeAttr[nodeIdx])
+        }
+        return(size)
+    }
+
     drawPies(visControl) {
-        if(!this.data)
-            return
-
-        console.log(this.data)
-
-        this.nodeContainer.visible = false
-        this.pieContainer.visible = true
         let allValues = Object.values(visControl.timeseriesData).flat()
-        console.log(allValues)
-        console.log(d3.extent(allValues))
 
         let colorScale = d3.scaleLinear()
             .domain([d3.min(allValues), 1, d3.max(allValues)])
             .range(["#2166ac", "#f7f7f7", "#b2182b"])
+
+        let nodeSizeScale = PixiGraph.getNodeSizeScale(this.data.nodes, visControl)
         
         this.nodeContainer.children.forEach((sprite, i) => {
             let v = visControl.timeseriesData[this.data.nodes[i].Label]
@@ -486,7 +498,7 @@ class PixiGraph {
                 let pie = PixiGraph.getColorPie(v, colorScale)
                 pie.x = sprite.x
                 pie.y = sprite.y
-                let size = 0.8 * visControl.landmarkNodeSize
+                let size = this.getNodeSize(i, visControl, nodeSizeScale)
                 pie.scale.x = 0.005 * size
                 pie.scale.y = 0.005 * size
                 pie.rotation = 270 * (Math.PI / 180)
@@ -498,40 +510,37 @@ class PixiGraph {
     draw(visControl) {
         if(!this.data)
             return
+
+        this.pieContainer.removeChildren()
+        this.legendOverlay.removeChildren()
         
-        if (visControl.nodeColorAttr == "Timeseries")
+        if (visControl.nodeColorAttr == "Timeseries") {
+            if(!visControl.timeseriesData)
+                return
+            this.pieContainer.visible = true
             this.drawPies(visControl)
-        else
+            // Draw a graph with default colors behind the pies
+            visControl.nodeColorAttr = null
+            this.drawGraph(visControl)        
+        }
+        else {
+            this.pieContainer.visible = false
             this.drawGraph(visControl)
+        }
 
         this.renderer.render(this.rootContainer)
-
-
     }
 
-    drawGraph(visControl) {
-        if(!this.data)
-            return
-        
+    drawGraph(visControl) {        
         let nodeFillScale = PixiGraph.getNodeFillScale(this.data.nodes, visControl)
         let nodeSizeScale = PixiGraph.getNodeSizeScale(this.data.nodes, visControl)
-        this.legendOverlay.removeChildren()
 
         if(visControl.nodeColorAttr != null && (typeof visControl.nodeColorAttr[0] == "string"))
             this.drawLegendOverlay(nodeFillScale)
 
         this.nodeContainer.children.forEach((sprite, i) => {            
             let node = this.data.nodes[i]
-            let size = 0
-            
-            if(node.type && node.type == "landmark")
-                size = visControl.landmarkNodeSize
-            else {
-                if(visControl.nodeSizeAttr == null)
-                    size = 0.8 * visControl.landmarkNodeSize
-                else
-                    size = nodeSizeScale(visControl.nodeSizeAttr[i])
-            }
+            let size = this.getNodeSize(i, visControl, nodeSizeScale)
             
             sprite.scale.x = 0.005 * size
             sprite.scale.y = 0.005 * size
