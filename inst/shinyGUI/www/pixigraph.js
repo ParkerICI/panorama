@@ -140,7 +140,6 @@ class PixiGraph {
 
     static getNodeFillScale(nodes, visControl) {
         let ret = null
-        console.log(visControl)
 
         if(visControl.nodeColorAttr != null && (typeof visControl.nodeColorAttr[0] == "string")) {
             let s = new Set(visControl.nodeColorAttr)
@@ -262,7 +261,6 @@ class PixiGraph {
             })
         else
             selectedNodes.forEach(i => {
-                console.log(i)
                 let label = this.textContainer.children[i]
                 label.visible = !label.visible
             })
@@ -491,18 +489,23 @@ class PixiGraph {
             .range(["#2166ac", "#f7f7f7", "#b2182b"])
 
         let nodeSizeScale = PixiGraph.getNodeSizeScale(this.data.nodes, visControl)
-        
+        let nodeIdx = 0
+
         this.nodeContainer.children.forEach((sprite, i) => {
-            let v = visControl.timeseriesData[this.data.nodes[i].Label]
-            if(v) {
-                let pie = PixiGraph.getColorPie(v, colorScale)
-                pie.x = sprite.x
-                pie.y = sprite.y
-                let size = this.getNodeSize(i, visControl, nodeSizeScale)
-                pie.scale.x = 0.005 * size
-                pie.scale.y = 0.005 * size
-                pie.rotation = 270 * (Math.PI / 180)
-                this.pieContainer.addChild(pie)
+            let node = this.data.nodes[i]
+            if(!node.type || (node.type != "landmark")) {
+                let v = visControl.timeseriesData[nodeIdx]
+                if(v) {
+                    let pie = PixiGraph.getColorPie(v, colorScale)
+                    pie.x = sprite.x
+                    pie.y = sprite.y
+                    let size = this.getNodeSize(i, visControl, nodeSizeScale)
+                    pie.scale.x = 0.005 * size
+                    pie.scale.y = 0.005 * size
+                    pie.rotation = 270 * (Math.PI / 180)
+                    this.pieContainer.addChild(pie)
+                }
+                ++nodeIdx
             }
         })
     }
@@ -513,7 +516,7 @@ class PixiGraph {
 
         this.pieContainer.removeChildren()
         this.legendOverlay.removeChildren()
-        
+
         if (visControl.nodeColorAttr == "Timeseries") {
             if(!visControl.timeseriesData)
                 return

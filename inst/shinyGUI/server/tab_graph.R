@@ -301,11 +301,7 @@ get_timseries_data <- reactive({
     if(!is.null(graphui.reactive.values$timeseries.file)) {
         tab <- read.table(graphui.reactive.values$timeseries.file, sep = "\t", header = TRUE,
                           stringsAsFactors = FALSE, check.names = FALSE)
-        
-        row.names(tab) <- tab$Label
-        tab$Label <- NULL
-        tab <- data.frame(t(tab))
-        tab <- as.list(tab)
+        tab <- as.matrix(tab)
     }
     return(tab)
     

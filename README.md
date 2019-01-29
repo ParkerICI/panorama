@@ -80,6 +80,7 @@ One of the most useful ways to inspect a cluster is to plot the expression value
 - **Markers to plot**: Select which markers you want to display in the plot.
 - **Samples to plot**: only available if the graph represents data from multiple samples. If this is left empty, the pooled data is plotted, otherwise only the data from the specified samples
 - **Plot clusters**: plot the selected clusters. A spinner animation will appear in this button while the plot is loading. The plots appear in the separate plotting window
+- **Load timeseries data**: use this button to select a file of timeseries data that will be visualized on the graph. Each cluster will be represented as a pie, with each slice corresponding to a different timepoint. The file with timeseries data should be a tab-delimited table with each row corresponding to a node in the graph (excluding landmark nodes if the graph is a Scaffold map) and each column containing the values for a specific timepoint. The first column will be mapped to the first slice in the pie (starting at twelve o'clock), the second column to the second slice and so on. The timeseries data file must also contain column headers (any header will work). The color scale goes from blue to red, with white representing the midpoint associated with the value `1`. In order to activate this visualization, select `Timeseries` from the `Nodes color` dropdown after loading the data.
 
 
 
