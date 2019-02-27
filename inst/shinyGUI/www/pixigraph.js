@@ -447,7 +447,7 @@ class PixiGraph {
 
     }
 
-    static getColorPie(v, colorScale) {
+    static getColorPie(v, colorScale, visControl) {
         let angle = 360 / v.length
         let container = new PIXI.Container()
         let texture = PixiGraph.getPieSliceTexture(angle)
@@ -455,7 +455,16 @@ class PixiGraph {
 
         v.forEach((d, i) => {
             let sprite = PixiGraph.getPieSliceSprite(texture)
-            sprite.tint = PixiGraph.colorToInt(colorScale(d))
+            if(d) {
+                if(d < colorScale.domain()[0])
+                    sprite.tint = parseInt(visControl.colorUnder.substr(1, 7), 16)
+                else if(d > colorScale.domain()[2]) // [1] is the midpoint of the scale so we need [2]
+                    sprite.tint = parseInt(visControl.colorOver.substr(1, 7), 16)
+                else
+                    sprite.tint = PixiGraph.colorToInt(colorScale(d))
+            }
+            else
+                sprite.tint = 0x919191
             sprite.x = 50
             sprite.y = 50
             sprite.rotation = i * angle * (Math.PI / 180)
@@ -485,9 +494,10 @@ class PixiGraph {
         let allValues = Object.values(visControl.timeseriesData).flat()
 
         let colorScale = d3.scaleLinear()
-            .domain([d3.min(allValues), 1, d3.max(allValues)])
-            .range(["#2166ac", "#f7f7f7", "#b2182b"])
+            .domain(visControl.colorScaleDomain)
+            .range(visControl.colorScaleRange)
 
+        console.log(colorScale.domain())
         let nodeSizeScale = PixiGraph.getNodeSizeScale(this.data.nodes, visControl)
         let nodeIdx = 0
 
@@ -496,7 +506,7 @@ class PixiGraph {
             if(!node.type || (node.type != "landmark")) {
                 let v = visControl.timeseriesData[nodeIdx]
                 if(v) {
-                    let pie = PixiGraph.getColorPie(v, colorScale)
+                    let pie = PixiGraph.getColorPie(v, colorScale, visControl)
                     pie.x = sprite.x
                     pie.y = sprite.y
                     let size = this.getNodeSize(i, visControl, nodeSizeScale)

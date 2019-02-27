@@ -484,7 +484,7 @@ observe({
 observe({
     G <- get_graph()
     if(!is.null(G) && !is.null(igraph::V(G)$community_id))
-        updateSelectInput(session, "graphui_plot_type", choices = c("Density", "Boxplot", "Scatteplot", "Communities"))
+        updateSelectInput(session, "graphui_plot_type", choices = c("Density", "Boxplot", "Scatterplot", "Communities"))
 })
 
 observe({
@@ -495,6 +495,16 @@ observe({
             else
                 updateSelectInput(session, "graphui_facet_by", choices = c("Sample", "Variable"))
         })
+    }
+})
+
+observe({
+    if(!is.null(input$graphui_node_color_attr) && input$graphui_node_color_attr == "Timeseries") {
+        updateSliderInput(session, "graphui_color_scale_mid", value = 1)
+        updateSelectInput(session, "graphui_color_number", selected = 3, choices = c(2, 3))
+        colourpicker::updateColourInput(session, "graphui_color_min", value = "#2166AC")
+        colourpicker::updateColourInput(session, "graphui_color_mid", value = "#F7F7F7")
+        colourpicker::updateColourInput(session, "graphui_color_max", value = "#B2182B")
     }
 })
 
@@ -536,7 +546,7 @@ observe({
         }
     }
     
-    if(!is.null(node.color.attr) && is.character(node.color.attr)) {
+    if(!is.null(node.color.attr) && is.character(node.color.attr) && node.color.attr != "Timeseries") {
         shinyjs::hide("graphui_color_number")
         shinyjs::hide("graphui_color_mid")
         shinyjs::hide("graphui_color_max")

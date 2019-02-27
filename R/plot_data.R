@@ -19,6 +19,8 @@ density_scatterplot <- function(tab, x.name, y.name, facet.by = NULL) {
     tab$cellType <- as.factor(tab$cellType)
     maxx <- max(tab[, x.name], na.rm = T) + 0.5
     maxy <- max(tab[, y.name], na.rm = T) + 0.5
+    x.sym <- ggplot2::sym(x.name)
+    y.sym <- ggplot2::sym(y.name)
 
     
     if(is.null(tab$sample) || length(unique(tab$sample)) == 1) {
@@ -28,7 +30,7 @@ density_scatterplot <- function(tab, x.name, y.name, facet.by = NULL) {
             return(data.frame(m, dens.col = dens.col, check.names = FALSE))
         }, x.name = x.name, y.name = y.name)
         
-        (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.name, y = y.name, color = "dens.col", size = 1), data = m)
+        (p <- ggplot2::ggplot(ggplot2::aes(x = !!x.sym, y = !!y.sym, color = dens.col, size = 1), data = m)
                 + ggplot2::facet_wrap(~cellType)
                 + ggplot2::geom_point()
                 + ggplot2::scale_colour_identity() 
@@ -38,7 +40,7 @@ density_scatterplot <- function(tab, x.name, y.name, facet.by = NULL) {
         )
     } else {
         if(facet.by == "Cluster")
-            (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.name, y = y.name, size = 1, colour = "sample"), data = tab)
+            (p <- ggplot2::ggplot(ggplot2::aes(x = !!x.sym, y = !!y.sym, size = 1, colour = sample), data = tab)
                     + ggplot2::facet_wrap(~cellType)
                     + ggplot2::geom_point()
                     + ggplot2::scale_size_identity()
@@ -46,7 +48,7 @@ density_scatterplot <- function(tab, x.name, y.name, facet.by = NULL) {
                     + ggplot2::ylim(0, maxy)
              )
         else if(facet.by == "Sample")
-            (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.name, y = y.name, size = 1, colour = "cellType"), data = tab)
+            (p <- ggplot2::ggplot(ggplot2::aes_string(x = !!x.sym, y = !!y.sym, size = 1, colour = cellType), data = tab)
                     + ggplot2::facet_wrap(~sample)
                     + ggplot2::geom_point()
                     + ggplot2::scale_size_identity()
