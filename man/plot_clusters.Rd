@@ -4,9 +4,17 @@
 \alias{plot_clusters}
 \title{Plot clusters data}
 \usage{
-plot_clusters(G, clusters, col.names, working.dir, plot.type,
-  pool.clusters = FALSE, pool.samples = FALSE,
-  samples.to.plot = NULL, facet.by = "Sample")
+plot_clusters(
+  G,
+  clusters,
+  col.names,
+  working.dir,
+  plot.type,
+  pool.clusters = FALSE,
+  pool.samples = FALSE,
+  samples.to.plot = NULL,
+  facet.by = "Sample"
+)
 }
 \arguments{
 \item{G}{An \code{igraph} graph object}
