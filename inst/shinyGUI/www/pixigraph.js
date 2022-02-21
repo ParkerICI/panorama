@@ -3,8 +3,8 @@
 class PixiGraph {
     
     constructor(onNodeNewSelection, onNodeAddToSelection) {
- 
-        this.renderer = new PIXI.WebGLRenderer({ antialias: true, interactive: true })  
+        this.application = new PIXI.Application()
+        this.renderer = this.application.renderer ///new PIXI.Renderer() //  this.application.renderer //new PIXI.WebGLRenderer({ antialias: true, interactive: true })  
         //this.renderer.roundPixels = true
         this.renderer.backgroundColor = 0xFFFFFF
         
@@ -186,19 +186,16 @@ class PixiGraph {
     }
     
     static getCircleTexture() {
-        let renderer = new PIXI.CanvasRenderer(100, 100, { antialias: true, transparent: true })
-        renderer.backgroundColor = 0xFFFFFF
+
+        let renderer = PIXI.autoDetectRenderer()
+        let renderTexture = PIXI.RenderTexture.create({ width: 100, height: 100 });
         let graphics = new PIXI.Graphics()
         graphics.beginFill(0x000000)
         graphics.drawCircle(50, 50, 50)
         graphics.beginFill(0xFFFFFF)
         graphics.drawCircle(50, 50, 45)
-        let container = new PIXI.Container()
-        
-        
-        container.addChild(graphics)
-        renderer.render(container)
-        return (PIXI.Texture.fromCanvas(renderer.view))
+        renderer.render(graphics, {renderTexture})
+        return(renderTexture)        
     }
     
     
@@ -239,7 +236,9 @@ class PixiGraph {
     }
 
     addToDOM(domEl) {
-        domEl.appendChild(this.renderer.view)
+        domEl.appendChild(this.application.view)
+        //domEl.appendChild(this.renderer.view)
+         
         this.addDragNDrop()
         
         let zoom = (x, y, isZoomIn) => {
